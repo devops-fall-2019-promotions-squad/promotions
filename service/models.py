@@ -24,6 +24,26 @@ from flask_mongoengine import MongoEngine
 # Create the MongoEngine object to be initialized later in init_db()
 db = MongoEngine()
 
+class ProductId(db.Document):
+    """
+    Class that represents a product id. 
+
+    """
+    product =  db.StringField(default='')
+
+    def __unicode__(self):
+        return self.product
+
+class Stakeholder(db.Document):
+    """
+    Class that represents a Stakeholder id
+
+    """
+    stakeholderid = db.StringField()
+
+    def __unicode__(self):
+        return self.product
+
 class Promotion(db.Document):
     """
     Class that represents a Promotion
@@ -37,6 +57,11 @@ class Promotion(db.Document):
     # Table Schema
     # TODO: define the Promotion schema, add field restrictions
     code = db.StringField(default='')
+    productids = db.ListField(db.ReferenceField(ProductId))
+    percentage = db.IntField(required=True, unique=False)
+    expirydate = db.DateTimeField()
+    stakeholders = db.ListField(db.ReferenceField(Stakeholder))
+    startdate = db.DateTimeField()
 
     @classmethod
     def init_db(cls, app):
