@@ -66,11 +66,11 @@ Vagrant.configure(2) do |config|
   ######################################################################
   # Add MongoDB docker container
   ######################################################################
-  # docker run -d --name mongo -p 5432:5432 -v mongodb_data:/var/lib/mongodb/data mongodb
+  # docker run -d --name mongo -p 27017:27017 -v mongo_data:/var/lib/mongo/data mongo
   config.vm.provision :docker do |d|
     d.pull_images "mongo:bionic"
     d.run "mongo:bionic",
-       args: "-d --name mongo -p 5432:5432 -v mongodb_data:/var/lib/mongodb/data"
+       args: "-d --name mongo -p 27017:27017 -v mongo_data:/var/lib/mongo/data"
   end
 
 end
