@@ -17,10 +17,14 @@
 #              \  \ `-.   \_\_`. _.'_/_/  -' _.' /
 #    ===========`-.`___`-.__\ \___  /__.-'_.'_.-'================
 #                            `=--=-'                    BUG FREE
+"""
+All service functions should be defined here
+"""
 
 import os
 import sys
 import logging
+from datetime import datetime, timedelta
 from flask import Flask, request, abort, jsonify, url_for
 from flask_api import status    # HTTP Status Codes
 
@@ -44,7 +48,12 @@ def index():
     # Promotion class.                                                  #
     #####################################################################
 
-    Promotion(code='SAVE20').save()
+    Promotion(
+        code='SAVE20',
+        percentage=70,
+        start_date=datetime.utcnow(),
+        expiry_date=datetime.utcnow() + timedelta(days=10)
+    ).save()
     lst = []
     for promotion in Promotion.objects:
         lst.append(promotion.code)
