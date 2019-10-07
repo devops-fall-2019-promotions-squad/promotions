@@ -24,12 +24,12 @@ from flask_mongoengine import MongoEngine
 # Create the MongoEngine object to be initialized later in init_db()
 db = MongoEngine()
 
-class ProductId(db.Document):
+class Product(db.Document):
     """
     Class that represents a product id. 
 
     """
-    product =  db.StringField(default='')
+    product_id =  db.StringField(default='')
 
     def __unicode__(self):
         return self.product
@@ -39,10 +39,7 @@ class Stakeholder(db.Document):
     Class that represents a Stakeholder id
 
     """
-    stakeholderid = db.StringField()
-
-    def __unicode__(self):
-        return self.product
+    stakeholder_id = db.StringField()
 
 class Promotion(db.Document):
     """
@@ -56,13 +53,15 @@ class Promotion(db.Document):
 
     # Table Schema
     # TODO: define the Promotion schema, add field restrictions
-    code = db.StringField(default='')
-    productids = db.ListField(db.ReferenceField(ProductId))
-    percentage = db.IntField(required=True, unique=False)
-    expirydate = db.DateTimeField()
+    code = db.StringField(default = '', required = True)
+    products = db.ListField(db.ReferenceField(Product))
+    percentage = db.IntField(required = True, unique=False, validation = _valid_perc)
+    expirydate = db.DateTimeField(required = True)
     stakeholders = db.ListField(db.ReferenceField(Stakeholder))
-    startdate = db.DateTimeField()
-
+    startdate = db.DateTimeField(required = True)
+    def _valid_perc(percentage):
+        if percentage<0 or percentage>100:
+            raise db.ValidationError('Percentage should be in the range of 0 to 100')
     @classmethod
     def init_db(cls, app):
         """ Initializes the database session """
