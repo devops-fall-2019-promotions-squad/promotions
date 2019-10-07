@@ -31,9 +31,6 @@ class Product(db.Document):
     """
     product_id =  db.StringField(default='')
 
-    def __unicode__(self):
-        return self.product
-
 class Stakeholder(db.Document):
     """
     Class that represents a Stakeholder id
@@ -56,9 +53,9 @@ class Promotion(db.Document):
     code = db.StringField(default = '', required = True)
     products = db.ListField(db.ReferenceField(Product))
     percentage = db.IntField(required = True, unique=False, validation = _valid_perc)
-    expirydate = db.DateTimeField(required = True)
+    expiry_date = db.DateTimeField(required = True)
     stakeholders = db.ListField(db.ReferenceField(Stakeholder))
-    startdate = db.DateTimeField(required = True)
+    start_date = db.DateTimeField(required = True)
     def _valid_perc(percentage):
         if percentage<0 or percentage>100:
             raise db.ValidationError('Percentage should be in the range of 0 to 100')
