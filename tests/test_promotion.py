@@ -18,13 +18,13 @@ DATABASE_URI = ""
 ######################################################################
 
 class TestPromotion(unittest.TestCase):
-	""" Test cases for Promotions """
+    """ Test cases for Promotions """
 
-	@classmethod
-	def setUpClass(cls):
-		""" Run once before all test cases """
-		app.debug = False
+    @classmethod
+    def setUpClass(cls):
+        """ Run once before all test cases """
+        app.debug = False
 
-	@classmethod
-	def tearDownClass(cls):
-		pass
+    @classmethod
+    def tearDownClass(cls):
+        pass

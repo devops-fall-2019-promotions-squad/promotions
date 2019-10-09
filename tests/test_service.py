@@ -22,13 +22,13 @@ DATABASE_URI = ""
 ######################################################################
 
 class TestPromotionServer(unittest.TestCase):
-	""" Promotion server test case """
+    """ Promotion server test case """
 
-	@classmethod
-	def setUpClass(cls):
-		""" Run once before all test cases """
-		app.debug = False
+    @classmethod
+    def setUpClass(cls):
+        """ Run once before all test cases """
+        app.debug = False
 
-	@classmethod
-	def tearDownClass(cls):
-		pass
+    @classmethod
+    def tearDownClass(cls):
+        pass
