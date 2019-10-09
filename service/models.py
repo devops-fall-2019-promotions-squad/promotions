@@ -49,12 +49,6 @@ class Product(db.Document):
     """
     product_id = db.StringField(default='')
 
-class Stakeholder(db.Document):
-    """
-    Class that represents a Stakeholder id
-    """
-    stakeholder_id = db.StringField()
-
 class Promotion(db.Document):
     """
     Class that represents a Promotion
@@ -70,7 +64,6 @@ class Promotion(db.Document):
     products = db.ListField(db.ReferenceField(Product))
     percentage = db.IntField(required=True, unique=False, validation=Validation.valid_perc)
     expiry_date = db.DateTimeField(required=True)
-    stakeholders = db.ListField(db.ReferenceField(Stakeholder))
     start_date = db.DateTimeField(required=True)
 
     @classmethod
