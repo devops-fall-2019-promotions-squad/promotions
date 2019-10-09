@@ -44,7 +44,7 @@ app.logger.info('  P R O M O T I O N   S E R V I C E   R U N N I N G  '.center(7
 app.logger.info(70 * '*')
 
 try:
-    service.init_db()  # make our sqlalchemy tables
+    service.init_db()  # initializes our mongo DB
 except Exception as error:
     app.logger.critical('%s: Cannot continue', error)
 

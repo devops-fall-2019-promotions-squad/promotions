@@ -67,6 +67,18 @@ class Promotion(db.Document):
     start_date = db.DateTimeField(required=True)
 
     @classmethod
+    def all(cls):
+        """ Returns all of the Promotions in the database """
+        cls.logger.info('Processing all Promotions')
+        return cls.objects()
+    
+    @classmethod
+    def find_by_code(cls, code):
+        """ Find a list of promotions having the given a promotion code """
+        cls.logger.info('Find promotions by code {}'.format(code))
+        return cls.objects(code=code)
+
+    @classmethod
     def init_db(cls, app):
         """ Initializes the database session """
         cls.logger.info('Initializing database')

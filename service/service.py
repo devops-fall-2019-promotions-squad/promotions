@@ -25,7 +25,7 @@ import os
 import sys
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, request, abort, jsonify, url_for
+from flask import Flask, request, abort, jsonify, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 
 from flask_mongoengine import MongoEngine
@@ -49,7 +49,7 @@ def index():
     #####################################################################
 
     Promotion(
-        code='SAVE20',
+        code='SAVE15',
         percentage=70,
         start_date=datetime.utcnow(),
         expiry_date=datetime.utcnow() + timedelta(days=10)
@@ -58,6 +58,28 @@ def index():
     for promotion in Promotion.objects:
         lst.append(promotion.code)
     return jsonify(lst)
+
+
+######################################################################
+# LIST PROMOTIONS
+######################################################################
+@app.route('/promotions', methods=['GET'])
+def list_promotions():
+    """
+    List promotions.
+
+    This endpoint will return all promotions if no promotion code is provided.
+    If a promotion code is provided, it returns a list of promotions having
+    the that promotion code.
+    """
+    code = request.args.get('promotion-code')
+    promotions = []
+    if code:
+        promotions = Promotion.find_by_code(code)
+    else:
+        promotions = Promotion.all()
+    
+    return make_response(jsonify(promotions), status.HTTP_200_OK)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
