@@ -16,6 +16,3 @@ class PromotionFactory(factory.Factory):
     expiry_date = FuzzyChoice(choices=['11-11-2019', '04-01-2018', '01-10-2019', '03-05-2020'])
     start_date = FuzzyChoice(choices=['11-11-2019', '04-01-2018', '01-10-2019', '03-05-2020'])
 
-if __name__ == '__main__':
-    for _ in range(10):
-        promotion = PromotionFactory()
