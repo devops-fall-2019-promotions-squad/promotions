@@ -21,14 +21,12 @@
 All service functions should be defined here
 """
 
-import os
 import sys
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, request, abort, jsonify, url_for, make_response
+from flask import request, abort, jsonify, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 
-from flask_mongoengine import MongoEngine
 from service.models import Promotion
 
 # Import Flask application
@@ -75,10 +73,12 @@ def list_promotions():
     code = request.args.get('promotion-code')
     promotions = []
     if code:
+        app.logger.info('Request for promotion list with code %s', code)
         promotions = Promotion.find_by_code(code)
     else:
+        app.logger.info('Request for promotion list')
         promotions = Promotion.all()
-    
+
     return make_response(jsonify(promotions), status.HTTP_200_OK)
 
 ######################################################################
