@@ -21,14 +21,12 @@
 All service functions should be defined here
 """
 
-import os
 import sys
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, request, abort, jsonify, url_for, make_response
+from flask import request, abort, jsonify, url_for, make_response
 from flask_api import status    # HTTP Status Codes
 
-from flask_mongoengine import MongoEngine
 from service.models import Promotion
 
 # Import Flask application
@@ -71,14 +69,19 @@ def list_promotions():
     This endpoint will return all promotions if no promotion code is provided.
     If a promotion code is provided, it returns a list of promotions having
     the that promotion code.
+    While no promotion is found, no matter a code is provided or not, rather
+    than raising a NotFound, we return an empty list to indicate that nothing
+    is found.
     """
     code = request.args.get('promotion-code')
     promotions = []
     if code:
+        app.logger.info('Request for promotion list with code %s', code)
         promotions = Promotion.find_by_code(code)
     else:
+        app.logger.info('Request for promotion list')
         promotions = Promotion.all()
-    
+
     return make_response(jsonify(promotions), status.HTTP_200_OK)
 
 ######################################################################

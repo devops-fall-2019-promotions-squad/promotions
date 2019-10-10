@@ -6,7 +6,6 @@ Test cases can be run with:
 """
 
 import unittest
-import os
 from service.models import Promotion, db
 from service import app
 from .promotion_factory import PromotionFactory
@@ -27,7 +26,7 @@ class TestPromotion(unittest.TestCase):
     def tearDownClass(cls):
         """ Run once after all test cases """
         pass
-    
+
     def setUp(self):
         """ Runs before each test """
         db.connection.drop_database('promotion')    # clean up the last tests
@@ -35,7 +34,7 @@ class TestPromotion(unittest.TestCase):
     def tearDown(self):
         """ Runs after each test """
         db.connection.drop_database('promotion')    # clean up the last tests
-    
+
     def test_find_by_code(self):
         """ Find Promotions by code """
         self.assertEqual(len(Promotion.all()), 0)
@@ -46,7 +45,7 @@ class TestPromotion(unittest.TestCase):
                 promotion = PromotionFactory()
                 promotion.code = code
                 promotion.save()
-        
+
         for count, code in zip(counts, codes):
             promotions = Promotion.find_by_code(code)
             self.assertEqual(len(promotions), count)
