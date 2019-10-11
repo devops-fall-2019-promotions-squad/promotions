@@ -74,3 +74,9 @@ class Promotion(db.Document):
         # This is where we initialize MongoEngine from the Flask app
         db.init_app(app)
         app.app_context().push()
+
+    @classmethod
+    def find(cls, promotion_id):
+        """ Read a promotions by it's ID """
+        cls.logger.info('Processing lookup for id {}'.format(promotion_id))
+        return cls.objects.get(id=promotion_id)

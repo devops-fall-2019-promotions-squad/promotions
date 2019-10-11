@@ -25,10 +25,10 @@ import os
 import sys
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, request, abort, jsonify, url_for
+from flask import request, abort, jsonify, url_for, make_response
 from flask_api import status    # HTTP Status Codes
+from werkzeug.exceptions import NotFound
 
-from flask_mongoengine import MongoEngine
 from service.models import Promotion
 
 # Import Flask application
@@ -98,3 +98,19 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.setLevel(log_level)
         app.logger.propagate = False
         app.logger.info('Logging handler established')
+
+######################################################################
+# READ A PROMOTION
+######################################################################
+@app.route('/promotions/<promotion_id>', methods=['GET'])
+def read_a_promotioin(promotion_id):
+    """
+    Read a single promotion
+
+    This endpoint will return a Promotion based on it's id
+    """
+    app.logger.info('Read a promotion with id: %s', promotion_id)
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+    return make_response(jsonify(promotion), status.HTTP_200_OK)
