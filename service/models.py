@@ -22,10 +22,11 @@ All models should be defined here
 """
 
 import logging
-from flask_mongoengine import MongoEngine
+from flask_pymongo import PyMongo
 
 # Create the MongoEngine object to be initialized later in init_db()
-db = MongoEngine()
+mongo = PyMongo()
+db = mongo.db
 
 class Validation:
     """
