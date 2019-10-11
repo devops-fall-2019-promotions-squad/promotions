@@ -23,6 +23,7 @@ All models should be defined here
 
 import logging
 from flask_mongoengine import MongoEngine
+from mongoengine import DoesNotExist
 
 # Create the MongoEngine object to be initialized later in init_db()
 db = MongoEngine()
@@ -79,4 +80,8 @@ class Promotion(db.Document):
     def find(cls, promotion_id):
         """ Read a promotions by it's ID """
         cls.logger.info('Processing lookup for id {}'.format(promotion_id))
-        return cls.objects.get(id=promotion_id)
+        try:
+            promotion = cls.objects.get(id=promotion_id)
+            return promotion
+        except DoesNotExist as e:
+            return None

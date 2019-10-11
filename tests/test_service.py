@@ -43,7 +43,7 @@ class TestPromotionServer(unittest.TestCase):
         """ Runs after each test """
         db.connection.drop_database('promotion')    # clean up the last tests
 
-    def test_read_a_promotioin(self):
+    def test_read_a_promotion(self):
         """ Read a promotion by given ID """
         test_promotion = PromotionFactory()
         test_promotion.save()
@@ -52,3 +52,8 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data['code'], test_promotion.code)
+
+    def test_read_a_promotion_not_found(self):
+        """ Read a promotion that is not found """
+        resp = self.app.get('/promotions/{}'.format('666f6f2d6261722d71757578'))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
