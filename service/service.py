@@ -28,7 +28,6 @@ from datetime import datetime, timedelta
 from flask import Flask, request, abort, jsonify, url_for
 from flask_api import status    # HTTP Status Codes
 
-from flask_mongoengine import MongoEngine
 from service.models import Promotion
 
 # Import Flask application
@@ -64,7 +63,7 @@ def index():
 ######################################################################
 
 def init_db():
-    """ Initialies the MongoDB """
+    """ Initializes the MongoDB """
     global app
     Promotion.init_db(app)
 

@@ -20,8 +20,9 @@ and SQL database
 """
 import os
 import sys
-import logging
 from flask import Flask
+# Import the routes After the Flask app is created
+from service import service, models
 
 # Get configuration from environment
 DATABASE_URI = os.getenv('DATABASE_URI', 'mongodb://localhost/promotion')
@@ -33,9 +34,6 @@ app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {'host': DATABASE_URI}
 app.config['SECRET_KEY'] = SECRET_KEY
 
-# Import the routes After the Flask app is created
-from service import service, models
-
 # Set up logging for production
 service.initialize_logging()
 
@@ -44,11 +42,11 @@ app.logger.info('  P R O M O T I O N   S E R V I C E   R U N N I N G  '.center(7
 app.logger.info(70 * '*')
 
 try:
-    service.init_db()  # make our sqlalchemy tables
+    service.init_db()
 except Exception as error:
     app.logger.critical('%s: Cannot continue', error)
 
     # gunicorn requires exit code 4 to stop spawning workers when they die
     sys.exit(4)
 
-app.logger.info('Service inititalized!')
+app.logger.info('Service initialized!')
