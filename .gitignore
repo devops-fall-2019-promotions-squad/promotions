@@ -106,3 +106,6 @@ venv.bak/
 
 # Vagrant stuff
 .vagrant/
+
+# ide stuff
+.idea/
