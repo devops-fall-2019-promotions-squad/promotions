@@ -115,4 +115,4 @@ def read_a_promotioin(promotion_id):
     promotion = Promotion.find(promotion_id)
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-    return make_response(jsonify(promotion), status.HTTP_200_OK)
+    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
