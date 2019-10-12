@@ -6,8 +6,9 @@ Test cases can be run with:
 """
 
 import unittest
-from service.models import Promotion, db
+from service.models import Promotion
 from service import app
+from mongoengine import connect
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -29,11 +30,13 @@ class TestPromotion(unittest.TestCase):
 
     def setUp(self):
         """ Runs before each test """
-        db.connection.drop_database('promotion')    # clean up the last tests
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
 
     def tearDown(self):
         """ Runs after each test """
-        db.connection.drop_database('promotion')    # clean up the last tests
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
 
     def test_find_by_code(self):
         """ Find Promotions by code """

@@ -65,6 +65,16 @@ class Promotion(Document):
     expiry_date = DateTimeField(required=True)
     start_date = DateTimeField(required=True)
 
+    def serialize(self):
+        """ Serializes a Promotion into a dictionary """
+        return {
+            "id": str(self.id),
+            "code": self.code,
+            "products": self.products,
+            "expiry_date": self.expiry_date,
+            "start_date": self.start_date,
+        }
+
     @classmethod
     def all(cls):
         """ Returns all of the Promotions in the database """

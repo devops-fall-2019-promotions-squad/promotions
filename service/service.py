@@ -23,8 +23,7 @@ All service functions should be defined here
 
 import sys
 import logging
-from datetime import datetime, timedelta
-from flask import request, abort, jsonify, make_response
+from flask import request, jsonify, make_response
 from flask_api import status    # HTTP Status Codes
 
 from service.models import Promotion
@@ -38,26 +37,9 @@ from . import app
 @app.route('/')
 def index():
     """ Root URL response """
-    #####################################################################
-    # This API should display documentation of our APIs.                #
-    # But now I used it as an little example for developers.            #
-    # This example showed how to add item to DB and iterate through DB. #
-    # Again, this is an example. All DB operation should be in          #
-    # Promotion class.                                                  #
-    #####################################################################
-
-    # pylint tells me to use a dict type... pretty dumb
-    Promotion(
-        **{"code": 'SAVE20',
-           "percentage": 70,
-           "start_date": datetime.utcnow(),
-           "expiry_date": datetime.utcnow() + timedelta(days=10)}
-    ).save()
-    lst = []
-    for promotion in Promotion.objects:
-        lst.append(promotion.code)
-    return jsonify(lst)
-
+    return jsonify(name='Promotion REST API Service',
+                   version='1.0',
+                  ), status.HTTP_200_OK
 
 ######################################################################
 # LIST PROMOTIONS
@@ -83,7 +65,7 @@ def list_promotions():
         app.logger.info('Request for promotion list')
         promotions = Promotion.all()
 
-    return make_response(jsonify(promotions), status.HTTP_200_OK)
+    return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -93,13 +75,6 @@ def init_db():
     """ Initializes the MongoDB """
     global app
     Promotion.init_db(app)
-
-def check_content_type(content_type):
-    """ Checks that the media type is correct """
-    if request.headers['Content-Type'] == content_type:
-        return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """

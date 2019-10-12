@@ -10,12 +10,9 @@ import unittest
 import os
 import logging
 from flask_api import status    # HTTP Status Codes
-from service.models import db
 from service.service import app, initialize_logging
-
+from mongoengine import connect
 from .promotion_factory import PromotionFactory
-
-DATABASE_URI = os.getenv('DATABASE_URI', 'mongodb://localhost/promotion')
 
 ######################################################################
 #  T E S T   C A S E S
@@ -37,12 +34,14 @@ class TestPromotionServer(unittest.TestCase):
 
     def setUp(self):
         """ Runs before each test """
-        db.connection.drop_database('promotion')    # clean up the last tests
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
         self.app = app.test_client()
 
     def tearDown(self):
         """ Runs after each test """
-        db.connection.drop_database('promotion')    # clean up the last tests
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
 
     def test_list_all_promotions(self):
         """ Get a list of all Promotions in DB """
