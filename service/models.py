@@ -24,7 +24,7 @@ All models should be defined here
 import logging
 # Create the MongoEngine object to be initialized later in init_db()
 from mongoengine import Document, ValidationError, StringField, ListField, \
-    ReferenceField, IntField, DateTimeField, connect
+    ReferenceField, IntField, DateTimeField, connect, DoesNotExist
 
 class Validation:
     """
@@ -95,3 +95,13 @@ class Promotion(Document):
         # This is where we initialize MongoEngine from the Flask app
         connect('promotion')
         app.app_context().push()
+
+    @classmethod
+    def find(cls, promotion_id):
+        """ Read a promotions by it's ID """
+        cls.logger.info('Processing lookup for id %s', promotion_id)
+        try:
+            promotion = cls.objects.get(id=promotion_id)
+            return promotion
+        except DoesNotExist:
+            return None

@@ -54,3 +54,21 @@ class TestPromotion(unittest.TestCase):
             self.assertEqual(len(promotions), count)
             for promotion in promotions:
                 self.assertEqual(promotion.code, code)
+
+    def test_find(self):
+        """ Find a Promotion by ID """
+        Promotion(code='SAVE30',
+                  percentage=70,
+                  start_date='2019-10-01',
+                  expiry_date='2019-11-01').save()
+        save50 = Promotion(code="SAVE50",
+                           percentage=50,
+                           start_date='2019-06-01',
+                           expiry_date='2019-06-30')
+        save50.save()
+
+        promotion = Promotion.find(save50.id)
+        self.assertIsNot(promotion, None)
+        self.assertEqual(promotion.id, save50.id)
+        self.assertEqual(promotion.code, save50.code)
+        self.assertEqual(promotion.percentage, save50.percentage)
