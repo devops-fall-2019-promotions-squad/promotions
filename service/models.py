@@ -48,13 +48,7 @@ class Product(Document):
     """
     product_id = StringField(default='')
 
-class Stakeholder(Document):
-    """
-    Class that represents a Stakeholder id
-    """
-    stakeholder_id = StringField()
-
-class Promotion(Document):
+class Promotion(db.Document):
     """
     Class that represents a Promotion
 
