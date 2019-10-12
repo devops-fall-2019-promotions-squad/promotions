@@ -71,5 +71,5 @@ class Promotion(Document):
         cls.logger.info('Initializing database')
         cls.app = app
         # This is where we initialize MongoEngine from the Flask app
-        connect('promotion', host='localhost', port=27017)
+        connect('promotion')
         app.app_context().push()
