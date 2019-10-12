@@ -47,11 +47,12 @@ def index():
     # Promotion class.                                                  #
     #####################################################################
 
+    # pylint tells me to use a dict type... pretty dumb
     Promotion(
-        code='SAVE20',
-        percentage=70,
-        start_date=datetime.utcnow(),
-        expiry_date=datetime.utcnow() + timedelta(days=10)
+        **{"code": 'SAVE20',
+            "percentage": 70,
+            "start_date": datetime.utcnow(),
+            "expiry_date": datetime.utcnow() + timedelta(days=10)}
     ).save()
     lst = []
     for promotion in Promotion.objects:

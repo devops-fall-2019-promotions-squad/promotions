@@ -21,11 +21,9 @@ and SQL database
 import os
 import sys
 from flask import Flask
-# Import the routes After the Flask app is created
-from service import service, models
 
 # Get configuration from environment
-DATABASE_URI = os.getenv('DATABASE_URI', 'mongodb://localhost/promotion')
+DATABASE_URI = os.getenv('DATABASE_URI', 'mongodb://localhost:27017')
 SECRET_KEY = os.getenv('SECRET_KEY', 's3cr3t-key-shhhh')
 
 # Create Flask application
@@ -33,6 +31,9 @@ app = Flask(__name__)
 
 app.config['MONGODB_SETTINGS'] = {'host': DATABASE_URI}
 app.config['SECRET_KEY'] = SECRET_KEY
+
+# Import the routes After the Flask app is created
+from service import service, models
 
 # Set up logging for production
 service.initialize_logging()
