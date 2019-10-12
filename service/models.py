@@ -22,11 +22,9 @@ All models should be defined here
 """
 
 import logging
-from flask_mongoengine import MongoEngine
-from mongoengine import DoesNotExist
-
 # Create the MongoEngine object to be initialized later in init_db()
-db = MongoEngine()
+from mongoengine import Document, ValidationError, StringField, ListField, \
+    ReferenceField, IntField, DateTimeField, connect, DoesNotExist
 
 class Validation:
     """
@@ -36,21 +34,21 @@ class Validation:
     def valid_code(cls, code):
         """ Code value should be non-empty """
         if not code:
-            raise db.ValidationError('Promotion code should be non-empty')
+            raise ValidationError('Promotion code should be non-empty')
 
     @classmethod
     def valid_perc(cls, percentage):
         """ Check if the given precentage value is in range 0 to 100 """
         if percentage < 0 or percentage > 100:
-            raise db.ValidationError('Percentage should be in the range of 0 to 100')
+            raise ValidationError('Percentage should be in the range of 0 to 100')
 
-class Product(db.Document):
+class Product(Document):
     """
     Class that represents a product id
     """
-    product_id = db.StringField(default='')
+    product_id = StringField(default='')
 
-class Promotion(db.Document):
+class Promotion(Document):
     """
     Class that represents a Promotion
 
@@ -61,11 +59,33 @@ class Promotion(db.Document):
     app = None
 
     # Table Schema
-    code = db.StringField(required=True, validation=Validation.valid_code)
-    products = db.ListField(db.ReferenceField(Product))
-    percentage = db.IntField(required=True, unique=False, validation=Validation.valid_perc)
-    expiry_date = db.DateTimeField(required=True)
-    start_date = db.DateTimeField(required=True)
+    code = StringField(required=True, validation=Validation.valid_code)
+    products = ListField(ReferenceField(Product))
+    percentage = IntField(required=True, unique=False, validation=Validation.valid_perc)
+    expiry_date = DateTimeField(required=True)
+    start_date = DateTimeField(required=True)
+
+    def serialize(self):
+        """ Serializes a Promotion into a dictionary """
+        return {
+            "id": str(self.id),
+            "code": self.code,
+            "products": self.products,
+            "expiry_date": self.expiry_date,
+            "start_date": self.start_date,
+        }
+
+    @classmethod
+    def all(cls):
+        """ Returns all of the Promotions in the database """
+        cls.logger.info('Processing all Promotions')
+        return cls.objects()
+
+    @classmethod
+    def find_by_code(cls, code):
+        """ Find a list of promotions having the given a promotion code """
+        cls.logger.info('Find promotions by code %s', code)
+        return cls.objects(code=code)
 
     @classmethod
     def init_db(cls, app):
@@ -73,7 +93,7 @@ class Promotion(db.Document):
         cls.logger.info('Initializing database')
         cls.app = app
         # This is where we initialize MongoEngine from the Flask app
-        db.init_app(app)
+        connect('promotion')
         app.app_context().push()
 
     @classmethod

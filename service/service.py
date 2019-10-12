@@ -21,11 +21,9 @@
 All service functions should be defined here
 """
 
-import os
 import sys
 import logging
-from datetime import datetime, timedelta
-from flask import request, abort, jsonify, url_for, make_response
+from flask import request, jsonify, make_response
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
@@ -40,40 +38,44 @@ from . import app
 @app.route('/')
 def index():
     """ Root URL response """
-    #####################################################################
-    # This API should display documentation of our APIs.                #
-    # But now I used it as an little example for developers.            #
-    # This example showed how to add item to DB and iterate through DB. #
-    # Again, this is an example. All DB operation should be in          #
-    # Promotion class.                                                  #
-    #####################################################################
+    return jsonify(name='Promotion REST API Service',
+                   version='1.0',
+                  ), status.HTTP_200_OK
 
-    Promotion(
-        code='SAVE20',
-        percentage=70,
-        start_date=datetime.utcnow(),
-        expiry_date=datetime.utcnow() + timedelta(days=10)
-    ).save()
-    lst = []
-    for promotion in Promotion.objects:
-        lst.append(promotion.code)
-    return jsonify(lst)
+######################################################################
+# LIST PROMOTIONS
+######################################################################
+@app.route('/promotions', methods=['GET'])
+def list_promotions():
+    """
+    List promotions.
+
+    This endpoint will return all promotions if no promotion code is provided.
+    If a promotion code is provided, it returns a list of promotions having
+    the that promotion code.
+    While no promotion is found, no matter a code is provided or not, rather
+    than raising a NotFound, we return an empty list to indicate that nothing
+    is found.
+    """
+    code = request.args.get('promotion-code')
+    promotions = []
+    if code:
+        app.logger.info('Request for promotion list with code %s', code)
+        promotions = Promotion.find_by_code(code)
+    else:
+        app.logger.info('Request for promotion list')
+        promotions = Promotion.all()
+
+    return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
 def init_db():
-    """ Initialies the MongoDB """
+    """ Initializes the MongoDB """
     global app
     Promotion.init_db(app)
-
-def check_content_type(content_type):
-    """ Checks that the media type is correct """
-    if request.headers['Content-Type'] == content_type:
-        return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
