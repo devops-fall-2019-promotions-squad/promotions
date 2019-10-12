@@ -62,10 +62,9 @@ class TestPromotion(unittest.TestCase):
                   start_date='2019-10-01',
                   expiry_date='2019-11-01').save()
         save50 = Promotion(code="SAVE50",
-                           percentage = 50,
+                           percentage=50,
                            start_date='2019-06-01',
                            expiry_date='2019-06-30')
-                          
         save50.save()
 
         promotion = Promotion.find(save50.id)

@@ -82,3 +82,4 @@ class TestPromotionServer(unittest.TestCase):
         """ Read a promotion that is not found """
         resp = self.app.get('/promotions/{}'.format('666f6f2d6261722d71757578'))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        

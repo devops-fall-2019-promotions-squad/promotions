@@ -99,9 +99,9 @@ class Promotion(Document):
     @classmethod
     def find(cls, promotion_id):
         """ Read a promotions by it's ID """
-        cls.logger.info('Processing lookup for id {}'.format(promotion_id))
+        cls.logger.info('Processing lookup for id %s', promotion_id)
         try:
             promotion = cls.objects.get(id=promotion_id)
             return promotion
-        except DoesNotExist as e:
+        except DoesNotExist:
             return None
