@@ -48,7 +48,7 @@ class Product(Document):
     """
     product_id = StringField(default='')
 
-class Promotion(db.Document):
+class Promotion(Document):
     """
     Class that represents a Promotion
 
@@ -63,7 +63,6 @@ class Promotion(db.Document):
     products = ListField(ReferenceField(Product))
     percentage = IntField(required=True, unique=False, validation=Validation.valid_perc)
     expiry_date = DateTimeField(required=True)
-    stakeholders = ListField(ReferenceField(Stakeholder))
     start_date = DateTimeField(required=True)
 
     @classmethod
