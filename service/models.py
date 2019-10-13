@@ -25,6 +25,7 @@ import logging
 # Create the MongoEngine object to be initialized later in init_db()
 from mongoengine import Document, ValidationError, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
+from datetime import datetime
 
 class Validation:
     """
@@ -85,14 +86,15 @@ class Promotion(Document):
         """
         try:
             self.code = data['code']
-            self.products = data['products']
             self.percentage = data['percentage']
-            self.expiry_date = data['expiry_date']
-            self.start_date = data['start_date']
+            self.expiry_date = datetime.fromtimestamp(int(data['expiry_date']))
+            self.start_date = datetime.fromtimestamp(int(data['start_date']))
         except KeyError as error:
-            print('Invalid promotion: missing ' + error.args[0])
+            self.logger.info('Invalid promotion: missing ' + error.args[0])
         except TypeError:
-            print('Invalid pet: body of request contained bad or no data')
+            self.logger.info('Invalid promotion: body of request contained bad or no data')
+        except OverflowError or OSError:
+            self.logger.info('Invalid start time or expiry time')
         return self
 
     @classmethod

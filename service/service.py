@@ -23,7 +23,7 @@ All service functions should be defined here
 
 import sys
 import logging
-from flask import request, jsonify, make_response, abort
+from flask import request, jsonify, make_response, abort, url_for
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
@@ -39,8 +39,7 @@ from . import app
 def index():
     """ Root URL response """
     return jsonify(name='Promotion REST API Service',
-                   version='1.0',
-                  ), status.HTTP_200_OK
+                   version='1.0'), status.HTTP_200_OK
 
 ######################################################################
 # LIST PROMOTIONS
@@ -67,6 +66,24 @@ def list_promotions():
         promotions = Promotion.all()
 
     return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
+
+
+######################################################################
+# ADD PROMOTIONS
+######################################################################
+@app.route('/promotions', methods=['POST'])
+def add_promotions():
+    app.logger.info('Request to create a promotion')
+    check_content_type('application/json')
+    promotion = Promotion()
+    promotion.deserialize(request.get_json())
+    promotion.save()
+    message = promotion.serialize()
+    location_url = url_for('read_a_promotion', promotion_id=promotion.id, _external=True)
+    return make_response(jsonify(message), status.HTTP_201_CREATED,
+                         {
+                             'Location': location_url
+                         })
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -112,7 +129,7 @@ def initialize_logging(log_level=logging.INFO):
 # READ A PROMOTION
 ######################################################################
 @app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotioin(promotion_id):
+def read_a_promotion(promotion_id):
     """
     Read a single promotion
 
