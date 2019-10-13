@@ -28,6 +28,7 @@ from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
 from service.models import Promotion, DataValidationError
+from mongoengine import ValidationError
 
 # Import Flask application
 from . import app
@@ -145,12 +146,25 @@ def initialize_logging(log_level=logging.INFO):
 ######################################################################
 @app.errorhandler(DataValidationError)
 def request_validation_error(error):
-    """ Handles Value Errors from bad data """
+    """ Handles Value Errors from bad format data """
     return bad_request(error)
+
+@app.errorhandler(ValidationError)
+def save_validation_error(error):
+    """ Handles Value Errors from bad logic data """
+    messages = []
+    error_dict = error.to_dict()
+    for key in error_dict:
+        messages.append(error_dict[key])
+    message = '. '.join(messages)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):
-    """ Handles bad reuests with 400_BAD_REQUEST """
+    """ Handles bad requests with 400_BAD_REQUEST """
     message = str(error)
     app.logger.warning(message)
     return jsonify(status=status.HTTP_400_BAD_REQUEST,
