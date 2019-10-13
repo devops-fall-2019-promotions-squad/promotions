@@ -152,11 +152,7 @@ def request_validation_error(error):
 @app.errorhandler(ValidationError)
 def save_validation_error(error):
     """ Handles Value Errors from bad logic data """
-    messages = []
-    error_dict = error.to_dict()
-    for key in error_dict:
-        messages.append(error_dict[key])
-    message = '. '.join(messages)
+    message = '. '.join(list(error.to_dict().values()))
     app.logger.warning(message)
     return jsonify(status=status.HTTP_400_BAD_REQUEST,
                    error='Bad Request',
