@@ -27,6 +27,10 @@ from mongoengine import Document, ValidationError, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
 from datetime import datetime
 
+class DataValidationError(Exception):
+    """ Used for an data validation errors when deserializing """
+    pass
+
 class Validation:
     """
     Class that wraps up all DB validation functions
@@ -90,11 +94,11 @@ class Promotion(Document):
             self.expiry_date = datetime.fromtimestamp(int(data['expiry_date']))
             self.start_date = datetime.fromtimestamp(int(data['start_date']))
         except KeyError as error:
-            self.logger.info('Invalid promotion: missing ' + error.args[0])
+            raise DataValidationError('Invalid promotion: missing ' + error.args[0])
         except TypeError:
-            self.logger.info('Invalid promotion: body of request contained bad or no data')
-        except OverflowError or OSError:
-            self.logger.info('Invalid start time or expiry time')
+            raise DataValidationError('Invalid promotion: body of request contained bad or no data')
+        except ValueError:
+            raise DataValidationError('Invalid time format')
         return self
 
     @classmethod

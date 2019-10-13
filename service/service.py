@@ -27,7 +27,7 @@ from flask import request, jsonify, make_response, abort, url_for
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
-from service.models import Promotion
+from service.models import Promotion, DataValidationError
 
 # Import Flask application
 from . import app
@@ -67,6 +67,21 @@ def list_promotions():
 
     return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
 
+######################################################################
+# READ A PROMOTION
+######################################################################
+@app.route('/promotions/<promotion_id>', methods=['GET'])
+def read_a_promotion(promotion_id):
+    """
+    Read a single promotion
+
+    This endpoint will return a Promotion based on it's id
+    """
+    app.logger.info('Read a promotion with id: %s', promotion_id)
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # ADD PROMOTIONS
@@ -126,17 +141,18 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.info('Logging handler established')
 
 ######################################################################
-# READ A PROMOTION
+# Error Handlers
 ######################################################################
-@app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotion(promotion_id):
-    """
-    Read a single promotion
+@app.errorhandler(DataValidationError)
+def request_validation_error(error):
+    """ Handles Value Errors from bad data """
+    return bad_request(error)
 
-    This endpoint will return a Promotion based on it's id
-    """
-    app.logger.info('Read a promotion with id: %s', promotion_id)
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+@app.errorhandler(status.HTTP_400_BAD_REQUEST)
+def bad_request(error):
+    """ Handles bad reuests with 400_BAD_REQUEST """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
