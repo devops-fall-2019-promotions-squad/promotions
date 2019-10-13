@@ -23,7 +23,7 @@ All service functions should be defined here
 
 import sys
 import logging
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, abort
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
@@ -76,6 +76,13 @@ def init_db():
     """ Initializes the MongoDB """
     global app
     Promotion.init_db(app)
+
+def check_content_type(content_type):
+    """ Checks that the media type is correct """
+    if request.headers['Content-Type'] == content_type:
+        return
+    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """

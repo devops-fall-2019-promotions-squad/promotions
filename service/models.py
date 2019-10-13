@@ -71,9 +71,29 @@ class Promotion(Document):
             "id": str(self.id),
             "code": self.code,
             "products": self.products,
+            "percentage": self.percentage,
             "expiry_date": self.expiry_date,
             "start_date": self.start_date,
         }
+
+    def deserialize(self, data):
+        """
+        Deserializes a Promotion from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the Promotion data
+        """
+        try:
+            self.code = data['code']
+            self.products = data['products']
+            self.percentage = data['percentage']
+            self.expiry_date = data['expiry_date']
+            self.start_date = data['start_date']
+        except KeyError as error:
+            print('Invalid promotion: missing ' + error.args[0])
+        except TypeError:
+            print('Invalid pet: body of request contained bad or no data')
+        return self
 
     @classmethod
     def all(cls):
