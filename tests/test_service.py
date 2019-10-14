@@ -83,6 +83,13 @@ class TestPromotionServer(unittest.TestCase):
         resp = self.app.get('/promotions/{}'.format('666f6f2d6261722d71757578'))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_delete_a_promotion(self):
+        """ Delete a promotion by given ID """
+        test_promotion = PromotionFactory()
+        test_promotion.save()
+        resp = self.app.delete('/promotions/{}'.format(test_promotion.id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
     def test_list_all_apis(self):
         """ List all APIs """
         resp = self.app.get('/', content_type='application/json')
@@ -90,3 +97,4 @@ class TestPromotionServer(unittest.TestCase):
         data = resp.get_json()
         api_cnt = len(app.url_map._rules) - 1 # exclude static
         self.assertEqual(len(data['functions']), api_cnt)
+        
