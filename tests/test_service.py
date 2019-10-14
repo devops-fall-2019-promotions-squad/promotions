@@ -163,3 +163,10 @@ class TestPromotionServer(unittest.TestCase):
                              json={'fake': []},
                              content_type='application/xml')
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,)
+
+    def test_delete_a_promotion(self):
+        """ Delete a promotion by given ID """
+        test_promotion = PromotionFactory()
+        test_promotion.save()
+        resp = self.app.delete('/promotions/{}'.format(test_promotion.id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)

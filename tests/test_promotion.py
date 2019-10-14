@@ -6,8 +6,8 @@ Test cases can be run with:
 """
 
 import unittest
-from service import app
 from mongoengine import connect
+from service import app
 from service.models import Promotion, Product
 from .promotion_factory import PromotionFactory
 
@@ -31,12 +31,12 @@ class TestPromotion(unittest.TestCase):
     def setUp(self):
         """ Runs before each test """
         db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
+        db.drop_database('promotion')  # clean up the last tests
 
     def tearDown(self):
         """ Runs after each test """
         db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
+        db.drop_database('promotion')  # clean up the last tests
 
     def test_find_by_code(self):
         """ Find Promotions by code """
@@ -104,3 +104,14 @@ class TestProduct(unittest.TestCase):
         self.assertEqual(Product.objects.count(), 1)
         product = Product.objects.get(product_id=test_id).serialize()
         self.assertEqual(product['product_id'], test_id)
+
+    def test_delete(self):
+        """ Delete a Promotion by ID """
+        promotion = Promotion(code='SAVE30',
+                              percentage=70,
+                              start_date='2019-10-01',
+                              expiry_date='2019-11-01')
+        promotion.save()
+        self.assertEqual(len(Promotion.all()), 1)
+        promotion.delete()
+        self.assertEqual((len(Promotion.all())), 0)
