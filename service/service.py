@@ -23,7 +23,7 @@ All service functions should be defined here
 
 import sys
 import logging
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, abort
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
@@ -95,7 +95,8 @@ def apply_a_promotioin(promotion_id):
     except KeyError as error:
         raise DataValidationError('Missing products key in request data')
     except AssertionError as error:
-        raise DataValidationError('The given products in request data should be a list of serialized product objects')
+        raise DataValidationError('The given products in request data \
+            should be a list of serialized product objects')
 
     # Apply promotion on products
     products_with_new_prices = []

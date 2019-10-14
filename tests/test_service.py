@@ -7,13 +7,12 @@ Test cases can be run with the following:
 """
 
 import unittest
-import os
 import logging
 from flask_api import status    # HTTP Status Codes
-from service.service import app, initialize_logging
 from mongoengine import connect
-from .promotion_factory import PromotionFactory
+from service.service import app, initialize_logging
 from service.models import Product
+from .promotion_factory import PromotionFactory
 
 ######################################################################
 #  T E S T   C A S E S
@@ -115,9 +114,9 @@ class TestPromotionServer(unittest.TestCase):
                 ground_truth[product_id] = price
 
         # Apply promotion
-        resp = self.app.post('/promotions/{}/apply'.format(test_promotion.id), 
-                            json=request_data, 
-                            content_type='application/json')
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion.id),
+                             json=request_data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         resp_data = resp.get_json()
         for product in resp_data['products']:
@@ -139,23 +138,28 @@ class TestPromotionServer(unittest.TestCase):
         print(request_data)
 
         # Apply promotion with nonexist promotion
-        resp = self.app.post('/promotions/{}/apply'.format(nonexist_promotion_id), 
-                            json=request_data, 
-                            content_type='application/json')
+        resp = self.app.post('/promotions/{}/apply'.format(nonexist_promotion_id),
+                             json=request_data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Apply promotion with bad products data
-        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id), 
-                            json=request_data, 
-                            content_type='application/json')
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id),
+                             json=request_data,
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id), 
-                            json={'products': {}}, 
-                            content_type='application/json')
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id),
+                             json={'products': {}},
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id), 
-                            json={'fake': []}, 
-                            content_type='application/json')
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id),
+                             json={'fake': []},
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion_id),
+                             json={'fake': []},
+                             content_type='application/xml')
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,)

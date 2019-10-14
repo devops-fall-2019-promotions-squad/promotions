@@ -6,9 +6,9 @@ Test cases can be run with:
 """
 
 import unittest
-from service.models import Promotion, Product
 from service import app
 from mongoengine import connect
+from service.models import Promotion, Product
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -99,7 +99,6 @@ class TestProduct(unittest.TestCase):
     def test_product_serialize(self):
         """ Test Product serialization """
         test_id = 'ae12GH1vfg2KC51a'
-        test_price = 102.15
         self.assertEqual(Product.objects.count(), 0)
         Product(product_id=test_id).save()
         self.assertEqual(Product.objects.count(), 1)
