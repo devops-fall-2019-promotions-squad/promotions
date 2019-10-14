@@ -43,7 +43,7 @@ Then all you have to do is clone this repo and invoke vagrant:
 Run the tests using `nose`
 
 ```bash
-	cd /vagrant/
+    cd /vagrant/
     nosetests
 ```
 
