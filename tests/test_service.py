@@ -82,13 +82,13 @@ class TestPromotionServer(unittest.TestCase):
         """ Update a promotion, given a promotion id """
         # create a promotion to update
         test_promotion = PromotionFactory()
-        resp = self.app.post('/promotions/', 
-                            json=test_promotion.serialize(), 
-                            content_type = 'application/json')
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # resp = self.app.post('/promotions', 
+        #                     json=test_promotion.serialize(), 
+        #                     content_type = 'application/json')
+        # self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         #update a promotion
-        new_promotion = PromotionFactory()
+        new_promotion = resp.get_json()
         new_promotion['code'] = 'SAVENEW'
         resp = self.app.put('/promotions/{}'.format(new_promotion['id']),
                             json=new_promotion, 
