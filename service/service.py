@@ -116,3 +116,18 @@ def read_a_promotioin(promotion_id):
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# LIST ALL APIS
+######################################################################
+@app.route('/promotions/helper', methods=['GET'])
+def list_all_apis():
+    """ Returns all of the APIs  """
+    app.logger.info('Request for api list')
+    func_list = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            methods = ','.join(rule.methods)
+            func_list.append((rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
+    return make_response(jsonify(func_list), status.HTTP_200_OK)
+    

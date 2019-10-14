@@ -82,4 +82,10 @@ class TestPromotionServer(unittest.TestCase):
         """ Read a promotion that is not found """
         resp = self.app.get('/promotions/{}'.format('666f6f2d6261722d71757578'))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-        
+
+    def test_list_all_apis(self):
+        """ List all APIs """
+        resp = self.app.get('/promotions/helper', content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 4)
