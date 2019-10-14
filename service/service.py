@@ -27,7 +27,7 @@ from flask import request, jsonify, make_response
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
-from service.models import Promotion
+from service.models import Promotion, DataValidationError
 
 # Import Flask application
 from . import app
@@ -69,8 +69,60 @@ def list_promotions():
     return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
 
 ######################################################################
+# Apply a promotion on products
+######################################################################
+@app.route('/promotions/<promotion_id>/apply', methods=['POST'])
+def apply_a_promotioin(promotion_id):
+    """
+    Apply a promotion on a given set of products together with their prices
+
+    This endpoint will return those given products with their updated price.
+    Products that are not eligible to the given promotion will be returned without any update
+    """
+    app.logger.info('Apply promotion {%s} to products', promotion_id)
+    check_content_type('application/json')
+    data = request.get_json()
+
+    # Get promotion data
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+
+    # Get product data
+    try:
+        products = data['products']
+        assert(isinstance(products, list))
+    except KeyError as error:
+        raise DataValidationError('Missing products key in request data')
+    except AssertionError as error:
+        raise DataValidationError('The given products in request data should be a list of serialized product objects')
+
+    # Apply promotion on products
+    products_with_new_prices = []
+    eligible_ids = [product['product_id'] for product in promotion.products]
+    print(eligible_ids)
+    for product in products:
+        product_id = product['product_id']
+        try:
+            price = float(product['price'])
+        except ValueError as error:
+            raise DataValidationError('The given product prices cannot convert to a float number')
+        if product_id in eligible_ids:
+            product['price'] = price * (promotion.percentage / 100.0)
+        products_with_new_prices.append(product)
+
+    return make_response(jsonify({"products": products_with_new_prices}), status.HTTP_200_OK)
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
+def check_content_type(content_type):
+    """ Checks that the media type is correct """
+    if request.headers['Content-Type'] == content_type:
+        return
+    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def init_db():
     """ Initializes the MongoDB """
@@ -116,3 +168,21 @@ def read_a_promotioin(promotion_id):
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+
+######################################################################
+# Error Handlers
+######################################################################
+@app.errorhandler(DataValidationError)
+def request_validation_error(error):
+    """ Handles Value Errors from bad data """
+    return bad_request(error)
+
+@app.errorhandler(status.HTTP_400_BAD_REQUEST)
+def bad_request(error):
+    """ Handles bad reuests with 400_BAD_REQUEST """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
