@@ -85,7 +85,8 @@ class TestPromotionServer(unittest.TestCase):
 
     def test_list_all_apis(self):
         """ List all APIs """
-        resp = self.app.get('/promotions/helper', content_type='application/json')
+        resp = self.app.get('/', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        self.assertEqual(len(data), 4)
+        api_cnt = len(app.url_map._rules) - 1 # exclude static
+        self.assertEqual(len(data['functions']), api_cnt)
