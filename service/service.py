@@ -33,16 +33,6 @@ from service.models import Promotion
 from . import app
 
 ######################################################################
-# GET INDEX
-######################################################################
-@app.route('/')
-def index():
-    """ Root URL response """
-    return jsonify(name='Promotion REST API Service',
-                   version='1.0',
-                  ), status.HTTP_200_OK
-
-######################################################################
 # LIST PROMOTIONS
 ######################################################################
 @app.route('/promotions', methods=['GET'])
@@ -132,3 +122,20 @@ def read_a_promotioin(promotion_id):
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# LIST ALL APIS
+######################################################################
+@app.route('/', methods=['GET'])
+def list_all_apis():
+    """ Root URL response. Returns all of the APIs  """
+    app.logger.info('Request for api list')
+    func_list = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            methods = ','.join(rule.methods)
+            func_list.append((rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
+    return make_response(jsonify(name='Promotion REST API Service',
+                                 version='1.0',
+                                 functions=func_list), status.HTTP_200_OK)
+    
