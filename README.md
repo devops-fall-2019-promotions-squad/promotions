@@ -30,23 +30,12 @@ Download [Vagrant](https://www.vagrantup.com/)
 Then all you have to do is clone this repo and invoke vagrant:
 
 ```bash
-    git clone https://github.com/nyu-devops/lab-flask-rest.git
-    cd lab-flask-rest
+    git clone https://github.com/devops-fall-2019-promotions-squad/promotions.git
+    cd promotions
     vagrant up
     vagrant ssh
     cd /vagrant
     FLASK_APP=service:app flask run -h 0.0.0.0
-```
-
-## Alternate install using local Python
-
-If you have Python 3 installed on your computer you can make a virtual environment and run the code locally with:
-
-```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    FLASK_APP=service:app flask run
 ```
 
 ## Manually running the Tests
@@ -54,6 +43,7 @@ If you have Python 3 installed on your computer you can make a virtual environme
 Run the tests using `nose`
 
 ```bash
+	cd /vagrant/
     nosetests
 ```
 
