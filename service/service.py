@@ -91,26 +91,33 @@ def apply_a_promotioin(promotion_id):
     # Get product data
     try:
         products = data['products']
-        assert(isinstance(products, list))
-    except KeyError as error:
+        assert isinstance(products, list)
+    except KeyError:
         raise DataValidationError('Missing products key in request data')
-    except AssertionError as error:
+    except AssertionError:
         raise DataValidationError('The given products in request data \
             should be a list of serialized product objects')
 
     # Apply promotion on products
     products_with_new_prices = []
     eligible_ids = [product['product_id'] for product in promotion.products]
+    non_eligible_ids = []
     print(eligible_ids)
     for product in products:
         product_id = product['product_id']
         try:
             price = float(product['price'])
-        except ValueError as error:
+        except ValueError:
             raise DataValidationError('The given product prices cannot convert to a float number')
         if product_id in eligible_ids:
             product['price'] = price * (promotion.percentage / 100.0)
+        else:
+            non_eligible_ids.append(product_id)
         products_with_new_prices.append(product)
+
+    if len(non_eligible_ids) > 0:
+        app.logger.info('The following products are not \
+            eligible to the given promotion: %s', non_eligible_ids)
 
     return make_response(jsonify({"products": products_with_new_prices}), status.HTTP_200_OK)
 
