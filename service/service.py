@@ -34,15 +34,6 @@ from mongoengine import ValidationError
 from . import app
 
 ######################################################################
-# GET INDEX
-######################################################################
-@app.route('/')
-def index():
-    """ Root URL response """
-    return jsonify(name='Promotion REST API Service',
-                   version='1.0'), status.HTTP_200_OK
-
-######################################################################
 # LIST PROMOTIONS
 ######################################################################
 @app.route('/promotions', methods=['GET'])
