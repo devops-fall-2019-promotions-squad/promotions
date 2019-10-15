@@ -77,8 +77,8 @@ class Promotion(Document):
             "code": self.code,
             "products": self.products,
             "percentage": self.percentage,
-            "expiry_date": self.expiry_date,
-            "start_date": self.start_date,
+            "expiry_date": self.expiry_date.strftime("%m-%d-%Y"),
+            "start_date": self.start_date.strftime("%m-%d-%Y"),
         }
 
     def deserialize(self, data):
@@ -91,8 +91,8 @@ class Promotion(Document):
         try:
             self.code = data['code']
             self.percentage = data['percentage']
-            self.expiry_date = datetime.fromtimestamp(int(data['expiry_date']))
-            self.start_date = datetime.fromtimestamp(int(data['start_date']))
+            self.expiry_date = datetime.strptime(data['expiry_date'], "%m-%d-%Y")
+            self.start_date = datetime.strptime(data['start_date'], "%m-%d-%Y")
         except KeyError as error:
             raise DataValidationError('Invalid promotion: missing ' + error.args[0])
         except TypeError:
