@@ -26,6 +26,10 @@ import logging
 from mongoengine import Document, ValidationError, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
 
+class DataValidationError(Exception):
+    """ Used for an data validation errors when deserializing """
+    pass
+
 class Validation:
     """
     Class that wraps up all DB validation functions
@@ -47,6 +51,13 @@ class Product(Document):
     Class that represents a product id
     """
     product_id = StringField(default='')
+
+    def serialize(self):
+        """ Serializes a Product into a dictionary """
+        return {
+            "id": str(self.id),
+            "product_id": self.product_id,
+        }
 
 class Promotion(Document):
     """
@@ -70,7 +81,8 @@ class Promotion(Document):
         return {
             "id": str(self.id),
             "code": self.code,
-            "products": self.products,
+            "products": [product.serialize() for product in self.products],
+            "percentage": self.percentage,
             "expiry_date": self.expiry_date,
             "start_date": self.start_date,
         }

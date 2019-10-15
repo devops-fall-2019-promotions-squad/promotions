@@ -6,9 +6,9 @@ Test cases can be run with:
 """
 
 import unittest
-from service.models import Promotion
-from service import app
 from mongoengine import connect
+from service import app
+from service.models import Promotion, Product
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -72,6 +72,38 @@ class TestPromotion(unittest.TestCase):
         self.assertEqual(promotion.id, save50.id)
         self.assertEqual(promotion.code, save50.code)
         self.assertEqual(promotion.percentage, save50.percentage)
+
+class TestProduct(unittest.TestCase):
+    """ Test cases for Products """
+
+    @classmethod
+    def setUpClass(cls):
+        """ Run once before all test cases """
+        app.debug = False
+
+    @classmethod
+    def tearDownClass(cls):
+        """ Run once after all test cases """
+        pass
+
+    def setUp(self):
+        """ Runs before each test """
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
+
+    def tearDown(self):
+        """ Runs after each test """
+        db = connect('promotion')
+        db.drop_database('promotion') # clean up the last tests
+
+    def test_product_serialize(self):
+        """ Test Product serialization """
+        test_id = 'ae12GH1vfg2KC51a'
+        self.assertEqual(Product.objects.count(), 0)
+        Product(product_id=test_id).save()
+        self.assertEqual(Product.objects.count(), 1)
+        product = Product.objects.get(product_id=test_id).serialize()
+        self.assertEqual(product['product_id'], test_id)
 
     def test_delete(self):
         """ Delete a Promotion by ID """
