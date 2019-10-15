@@ -9,6 +9,7 @@ from service.models import Promotion
 class PromotionFactory(factory.Factory):
     """ Creates fake promotions that you don't have to feed """
     class Meta:
+        """ Meta class for Promotion Factory """
         model = Promotion
     code = FuzzyChoice(choices=['SAVE15', 'SAVE20', 'SAVE30'])
     percentage = FuzzyChoice(choices=[10, 40, 30, 25, 5, 0, 15])
