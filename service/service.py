@@ -33,16 +33,6 @@ from service.models import Promotion, DataValidationError
 from . import app
 
 ######################################################################
-# GET INDEX
-######################################################################
-@app.route('/')
-def index():
-    """ Root URL response """
-    return jsonify(name='Promotion REST API Service',
-                   version='1.0',
-                  ), status.HTTP_200_OK
-
-######################################################################
 # LIST PROMOTIONS
 ######################################################################
 @app.route('/promotions', methods=['GET'])
@@ -138,6 +128,55 @@ def delete_promotions(promotion_id):
     return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
+# READ A PROMOTION
+######################################################################
+@app.route('/promotions/<promotion_id>', methods=['GET'])
+def read_a_promotioin(promotion_id):
+    """
+    Read a single promotion
+
+    This endpoint will return a Promotion based on it's id
+    """
+    app.logger.info('Read a promotion with id: %s', promotion_id)
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# LIST ALL APIS
+######################################################################
+@app.route('/', methods=['GET'])
+def list_all_apis():
+    """ Root URL response. Returns all of the APIs  """
+    app.logger.info('Request for api list')
+    func_list = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            methods = ','.join(rule.methods)
+            func_list.append((rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
+    return make_response(jsonify(name='Promotion REST API Service',
+                                 version='1.0',
+                                 functions=func_list), status.HTTP_200_OK)
+
+######################################################################
+# Error Handlers
+######################################################################
+@app.errorhandler(DataValidationError)
+def request_validation_error(error):
+    """ Handles Value Errors from bad data """
+    return bad_request(error)
+
+@app.errorhandler(status.HTTP_400_BAD_REQUEST)
+def bad_request(error):
+    """ Handles bad reuests with 400_BAD_REQUEST """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
@@ -176,37 +215,3 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.setLevel(log_level)
         app.logger.propagate = False
         app.logger.info('Logging handler established')
-
-######################################################################
-# READ A PROMOTION
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotioin(promotion_id):
-    """
-    Read a single promotion
-
-    This endpoint will return a Promotion based on it's id
-    """
-    app.logger.info('Read a promotion with id: %s', promotion_id)
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
-
-
-######################################################################
-# Error Handlers
-######################################################################
-@app.errorhandler(DataValidationError)
-def request_validation_error(error):
-    """ Handles Value Errors from bad data """
-    return bad_request(error)
-
-@app.errorhandler(status.HTTP_400_BAD_REQUEST)
-def bad_request(error):
-    """ Handles bad reuests with 400_BAD_REQUEST """
-    message = str(error)
-    app.logger.warning(message)
-    return jsonify(status=status.HTTP_400_BAD_REQUEST,
-                   error='Bad Request',
-                   message=message), status.HTTP_400_BAD_REQUEST
