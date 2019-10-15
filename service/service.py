@@ -23,14 +23,24 @@ All service functions should be defined here
 
 import sys
 import logging
-from flask import request, jsonify, make_response, abort
+from flask import request, jsonify, make_response, abort, url_for
 from flask_api import status    # HTTP Status Codes
 from werkzeug.exceptions import NotFound
 
 from service.models import Promotion, DataValidationError
+from mongoengine import ValidationError
 
 # Import Flask application
 from . import app
+
+######################################################################
+# GET INDEX
+######################################################################
+@app.route('/')
+def index():
+    """ Root URL response """
+    return jsonify(name='Promotion REST API Service',
+                   version='1.0'), status.HTTP_200_OK
 
 ######################################################################
 # LIST PROMOTIONS
@@ -131,7 +141,7 @@ def delete_promotions(promotion_id):
 # READ A PROMOTION
 ######################################################################
 @app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotioin(promotion_id):
+def read_a_promotion(promotion_id):
     """
     Read a single promotion
 
@@ -142,6 +152,23 @@ def read_a_promotioin(promotion_id):
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# ADD PROMOTIONS
+######################################################################
+@app.route('/promotions', methods=['POST'])
+def add_promotions():
+    app.logger.info('Request to create a promotion')
+    check_content_type('application/json')
+    promotion = Promotion()
+    promotion.deserialize(request.get_json())
+    promotion.save()
+    message = promotion.serialize()
+    location_url = url_for('read_a_promotion', promotion_id=promotion.id, _external=True)
+    return make_response(jsonify(message), status.HTTP_201_CREATED,
+                         {
+                             'Location': location_url
+                         })
 
 ######################################################################
 # LIST ALL APIS
@@ -227,6 +254,13 @@ def init_db():
     """ Initializes the MongoDB """
     global app
     Promotion.init_db(app)
+
+def check_content_type(content_type):
+    """ Checks that the media type is correct """
+    if request.headers['Content-Type'] == content_type:
+        return
+    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    abort(415, 'Content-Type must be {}'.format(content_type))
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """

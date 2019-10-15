@@ -7,10 +7,13 @@ Test cases can be run with the following:
 """
 
 import unittest
+import json
 import logging
 from unittest.mock import patch
 from flask_api import status    # HTTP Status Codes
 from mongoengine import connect
+
+from datetime import datetime
 from service.service import app, initialize_logging
 from service.models import Product
 from .promotion_factory import PromotionFactory
@@ -36,13 +39,13 @@ class TestPromotionServer(unittest.TestCase):
     def setUp(self):
         """ Runs before each test """
         db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
+        db.drop_database('promotion')  # clean up the last tests
         self.app = app.test_client()
 
     def tearDown(self):
         """ Runs after each test """
         db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
+        db.drop_database('promotion')  # clean up the last tests
 
     def test_list_all_promotions(self):
         """ Get a list of all Promotions in DB """
@@ -83,6 +86,34 @@ class TestPromotionServer(unittest.TestCase):
         """ Read a promotion that is not found """
         resp = self.app.get('/promotions/{}'.format('666f6f2d6261722d71757578'))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_add_a_promotion(self):
+        """ Add a promotion """
+        promotion = PromotionFactory()
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        # Make sure location header is set
+        location = resp.headers.get('Location', None)
+        self.assertTrue(location is not None)
+        # Check the data is correct
+        new_prom = resp.get_json()
+        self.assertEqual(new_prom['code'], promotion.code, "Codes do not match")
+        self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
+        self.assertEqual(new_prom['expiry_date'], promotion.expiry_date, "Expiry date does not match")
+        self.assertEqual(new_prom['start_date'], promotion.start_date, "Start date does not match")
+        # Check that the location header was correct
+        resp = self.app.get(location, content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        new_prom = resp.get_json()
+        self.assertEqual(new_prom['code'], promotion.code, "Codes do not match")
+        self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
+        self.assertEqual(new_prom['expiry_date'], promotion.expiry_date, "Expiry date does not match")
+        self.assertEqual(new_prom['start_date'], promotion.start_date, "Start date does not match")
 
     def test_apply_a_promotion_on_products(self):
         """ Apply a promotion on a set of products together with their prices """

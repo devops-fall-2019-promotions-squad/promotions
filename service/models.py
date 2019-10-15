@@ -25,6 +25,11 @@ import logging
 # Create the MongoEngine object to be initialized later in init_db()
 from mongoengine import Document, ValidationError, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
+from datetime import datetime
+
+class DataValidationError(Exception):
+    """ Used for an data validation errors when deserializing """
+    pass
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
@@ -83,9 +88,30 @@ class Promotion(Document):
             "code": self.code,
             "products": [product.serialize() for product in self.products],
             "percentage": self.percentage,
-            "expiry_date": self.expiry_date,
-            "start_date": self.start_date,
+            "expiry_date": self.expiry_date.strftime("%m-%d-%Y"),
+            "start_date": self.start_date.strftime("%m-%d-%Y"),
+
         }
+
+    def deserialize(self, data):
+        """
+        Deserializes a Promotion from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the Promotion data
+        """
+        try:
+            self.code = data['code']
+            self.percentage = data['percentage']
+            self.expiry_date = datetime.strptime(data['expiry_date'], "%m-%d-%Y")
+            self.start_date = datetime.strptime(data['start_date'], "%m-%d-%Y")
+        except KeyError as error:
+            raise DataValidationError('Invalid promotion: missing ' + error.args[0])
+        except TypeError:
+            raise DataValidationError('Invalid promotion: body of request contained bad or no data')
+        except ValueError:
+            raise DataValidationError('Invalid time format')
+        return self
 
     @classmethod
     def all(cls):
