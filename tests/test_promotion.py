@@ -72,3 +72,14 @@ class TestPromotion(unittest.TestCase):
         self.assertEqual(promotion.id, save50.id)
         self.assertEqual(promotion.code, save50.code)
         self.assertEqual(promotion.percentage, save50.percentage)
+
+    def test_add_a_promotion(self):
+        """ Create a promotion """
+        promotion = Promotion(code="SAVE50",
+                              percentage=50,
+                              start_date='2019-06-01',
+                              expiry_date='2019-06-30')
+        promotion.save()
+        promotions = Promotion.all()
+        self.assertEqual(len(promotions), 1)
+        self.assertEqual(promotions[0].code, "SAVE50")
