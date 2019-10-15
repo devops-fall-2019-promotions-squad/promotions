@@ -8,6 +8,7 @@ Test cases can be run with the following:
 
 import unittest
 import logging
+from unittest.mock import patch
 from flask_api import status    # HTTP Status Codes
 from mongoengine import connect
 from service.service import app, initialize_logging
@@ -176,6 +177,18 @@ class TestPromotionServer(unittest.TestCase):
         resp = self.app.get('/', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
-        api_cnt = len(app.url_map._rules) - 1 # exclude static
+        api_cnt = len(list(app.url_map.iter_rules())) - 1 # exclude static
         self.assertEqual(len(data['functions']), api_cnt)
-        
+
+    def test_invalid_method_request(self):
+        """ Testing invalid HTTP method request """
+        resp = self.app.post('/promotions') # this route only support GET
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @patch('service.models.Promotion.all')
+    def test_500_internal_server_error_request(self, list_all_mock):
+        """ Test a 500 internal server error request """
+        # let Promotion all function return a Exception to case a 500 error
+        list_all_mock.side_effect = Exception()
+        resp = self.app.get('/promotions')
+        self.assertEqual(resp.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
