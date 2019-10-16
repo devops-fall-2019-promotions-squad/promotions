@@ -34,15 +34,6 @@ from mongoengine import ValidationError
 from . import app
 
 ######################################################################
-# GET INDEX
-######################################################################
-@app.route('/')
-def index():
-    """ Root URL response """
-    return jsonify(name='Promotion REST API Service',
-                   version='1.0'), status.HTTP_200_OK
-
-######################################################################
 # LIST PROMOTIONS
 ######################################################################
 @app.route('/promotions', methods=['GET'])
@@ -242,14 +233,6 @@ def internal_server_error(error):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
-def check_content_type(content_type):
-    """ Checks that the media type is correct """
-    if request.headers['Content-Type'] == content_type:
-        return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(415, 'Content-Type must be {}'.format(content_type))
-
 def init_db():
     """ Initializes the MongoDB """
     global app

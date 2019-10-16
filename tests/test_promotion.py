@@ -6,9 +6,10 @@ Test cases can be run with:
 """
 
 import unittest
+import json
 from mongoengine import connect
 from service import app
-from service.models import Promotion, Product
+from service.models import Promotion, Product, DataValidationError
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -84,6 +85,68 @@ class TestPromotion(unittest.TestCase):
         promotions = Promotion.all()
         self.assertEqual(len(promotions), 1)
         self.assertEqual(promotions[0].code, "SAVE50")
+    
+    def test_promotion_deserialize(self):
+        """ Test Product deserialization"""
+        promotion = PromotionFactory()
+        json_data = json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
+            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+        ))
+        promotion_deserialized = Promotion()
+        promotion_deserialized.deserialize(json.loads(json_data))
+        self.assertEqual(promotion.code, promotion_deserialized.code)
+        self.assertEqual(promotion.percentage, promotion_deserialized.percentage)
+        self.assertEqual(promotion.expiry_date, promotion_deserialized.expiry_date)
+        self.assertEqual(promotion.start_date, promotion_deserialized.start_date)
+    
+    def test_promotion_deserialize_exceptions(self):
+        """ Test Product deserialization exceptions"""
+        promotion = PromotionFactory()
+        json_data = json.dumps(dict(
+            percentage=promotion.percentage,
+            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+        ))
+        promotion_deserialized = Promotion()
+        try:
+            promotion_deserialized.deserialize(json.loads(json_data))
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+        json_data = json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date="shouldn't like this",
+            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+        ))
+        promotion_deserialized = Promotion()
+        try:
+            promotion_deserialized.deserialize(json.loads(json_data))
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+    
+    def test_promotion_save_exceptions(self):
+        """ Test Product save exceptions"""
+        promotion = PromotionFactory()
+        promotion.percentage = 131
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+        
+        promotion.percentage = -12
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+        
+        promotion.code = ''
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
 
 class TestProduct(unittest.TestCase):
     """ Test cases for Products """

@@ -23,7 +23,7 @@ All models should be defined here
 
 import logging
 # Create the MongoEngine object to be initialized later in init_db()
-from mongoengine import Document, ValidationError, StringField, ListField, \
+from mongoengine import Document, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
 from datetime import datetime
 
@@ -43,13 +43,13 @@ class Validation:
     def valid_code(cls, code):
         """ Code value should be non-empty """
         if not code:
-            raise ValidationError('Promotion code should be non-empty')
+            raise DataValidationError('Promotion code should be non-empty')
 
     @classmethod
     def valid_perc(cls, percentage):
         """ Check if the given precentage value is in range 0 to 100 """
         if percentage < 0 or percentage > 100:
-            raise ValidationError('Percentage should be in the range of 0 to 100')
+            raise DataValidationError('Percentage should be in the range of 0 to 100')
 
 class Product(Document):
     """
@@ -111,8 +111,6 @@ class Promotion(Document):
                 self.products.append(p)
         except KeyError as error:
             raise DataValidationError('Invalid promotion: missing ' + error.args[0])
-        except TypeError:
-            raise DataValidationError('Invalid promotion: body of request contained bad or no data')
         except ValueError:
             raise DataValidationError('Invalid time format')
         return self
