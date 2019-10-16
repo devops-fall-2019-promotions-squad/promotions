@@ -154,6 +154,36 @@ class TestPromotionServer(unittest.TestCase):
         for product in resp_data['products']:
             self.assertEqual(product['price'], ground_truth[product['product_id']])
 
+    def test_update_a_promotion(self):
+        """ Update a promotion, given a promotion id """
+        # create a promotion to update
+        test_promotion = PromotionFactory()
+        resp = self.app.post('/promotions', 
+                            json=test_promotion.serialize(), 
+                            content_type = 'application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        #update a promotion
+        new_promotion = resp.get_json()
+        new_promotion['code'] = 'SAVENEW'
+        resp = self.app.put('/promotions/{}'.format(new_promotion['id']),
+                            json=new_promotion, 
+                            content_type = 'application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        updated_promotion = resp.get_json()
+        self.assertEqual(updated_promotion['code'], 'SAVENEW')
+        self.assertEqual(updated_promotion['id'], new_promotion['id'])
+    
+    def test_update_a_nonexist_promotion(self):
+        """ Update a promotion, given a nonexist promotion id """
+        fake_test_promotion_id = '666f6f2d6261722d71757578'
+
+        #update a promotion
+        resp = self.app.put('/promotions/{}'.format(fake_test_promotion_id),
+                            json={}, 
+                            content_type = 'application/json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_apply_a_promotion_with_bad_request_data(self):
         """ Test apply a promotion API with bad request data """
 
