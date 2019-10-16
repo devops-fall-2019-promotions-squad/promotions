@@ -21,17 +21,19 @@
 All service functions should be defined here
 """
 
-import sys
 import logging
-from flask import request, jsonify, make_response, abort, url_for
-from flask_api import status    # HTTP Status Codes
+import sys
+
+from flask import abort, jsonify, make_response, request, url_for
+from mongoengine import ValidationError
 from werkzeug.exceptions import NotFound
 
-from service.models import Promotion, DataValidationError
-from mongoengine import ValidationError
+from flask_api import status  # HTTP Status Codes
+from service.models import DataValidationError, Promotion
 
 # Import Flask application
 from . import app
+
 
 ######################################################################
 # LIST PROMOTIONS

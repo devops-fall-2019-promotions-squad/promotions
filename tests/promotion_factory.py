@@ -2,10 +2,11 @@
 """
 Test Factory to make fake objects for testing
 """
+import datetime
+
 import factory
 from factory.fuzzy import FuzzyChoice
 from service.models import Promotion
-import datetime
 
 
 class PromotionFactory(factory.Factory):
