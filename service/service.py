@@ -165,7 +165,7 @@ def add_promotions():
 # UPDATE PROMOTION
 ######################################################################
 @app.route('/promotions/<promotion_id>', methods=['PUT'])
-def update_promotions():
+def update_promotions(promotion_id):
     """
     Function to update a promotion
     """

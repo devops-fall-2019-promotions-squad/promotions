@@ -172,6 +172,17 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         updated_promotion = resp.get_json()
         self.assertEqual(updated_promotion['code'], 'SAVENEW')
+        self.assertEqual(updated_promotion['id'], new_promotion['id'])
+    
+    def test_update_a_nonexist_promotion(self):
+        """ Update a promotion, given a nonexist promotion id """
+        fake_test_promotion_id = '666f6f2d6261722d71757578'
+
+        #update a promotion
+        resp = self.app.put('/promotions/{}'.format(fake_test_promotion_id),
+                            json={}, 
+                            content_type = 'application/json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_apply_a_promotion_with_bad_request_data(self):
         """ Test apply a promotion API with bad request data """
