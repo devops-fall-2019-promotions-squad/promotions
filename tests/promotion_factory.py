@@ -4,7 +4,7 @@ Test Factory to make fake objects for testing
 """
 import factory
 from factory.fuzzy import FuzzyChoice
-from service.models import Promotion
+from service.models import Promotion, Product
 import datetime
 
 class PromotionFactory(factory.Factory):
@@ -16,6 +16,7 @@ class PromotionFactory(factory.Factory):
     percentage = FuzzyChoice(choices=[10, 40, 30, 25, 5, 0, 15])
     expiry_date = FuzzyChoice(choices=[datetime.datetime(year=2019, month=11, day=11), datetime.datetime(year=2018, month=1, day=4), datetime.datetime(year=2019, month=10, day=1), datetime.datetime(year=2020, month=5, day=3)])
     start_date = FuzzyChoice(choices=[datetime.datetime(year=2019, month=10, day=9), datetime.datetime(year=2018, month=11, day=2), datetime.datetime(year=2019, month=3, day=20), datetime.datetime(year=2018, month=5, day=13)])
+    # products = FuzzyChoice(choices=[map(lambda prod: [Product(product_id=prod), Product(product_id=prod).save()][0], ['MacBook', 'Airpods'])])
 
     @classmethod
     def batch_create(cls, count):
