@@ -9,12 +9,13 @@ import unittest
 import json
 from mongoengine import connect
 from service import app
-from service.models import Promotion, Product, DataValidationError
+from service.models import Promotion, DataValidationError
 from .promotion_factory import PromotionFactory
 
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
 
 class TestPromotion(unittest.TestCase):
     """ Test cases for Promotions """
@@ -74,7 +75,6 @@ class TestPromotion(unittest.TestCase):
         self.assertEqual(promotion.code, save50.code)
         self.assertEqual(promotion.percentage, save50.percentage)
 
-
     def test_add_a_promotion(self):
         """ Create a promotion """
         promotion = Promotion(code="SAVE50",
@@ -85,7 +85,7 @@ class TestPromotion(unittest.TestCase):
         promotions = Promotion.all()
         self.assertEqual(len(promotions), 1)
         self.assertEqual(promotions[0].code, "SAVE50")
-    
+
     def test_promotion_deserialize(self):
         """ Test Product deserialization"""
         promotion = PromotionFactory()
@@ -94,14 +94,18 @@ class TestPromotion(unittest.TestCase):
             percentage=promotion.percentage,
             expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
             start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            products=promotion.products
         ))
         promotion_deserialized = Promotion()
         promotion_deserialized.deserialize(json.loads(json_data))
         self.assertEqual(promotion.code, promotion_deserialized.code)
-        self.assertEqual(promotion.percentage, promotion_deserialized.percentage)
-        self.assertEqual(promotion.expiry_date, promotion_deserialized.expiry_date)
-        self.assertEqual(promotion.start_date, promotion_deserialized.start_date)
-    
+        self.assertEqual(promotion.percentage,
+                         promotion_deserialized.percentage)
+        self.assertEqual(promotion.expiry_date,
+                         promotion_deserialized.expiry_date)
+        self.assertEqual(promotion.start_date,
+                         promotion_deserialized.start_date)
+
     def test_promotion_deserialize_exceptions(self):
         """ Test Product deserialization exceptions"""
         promotion = PromotionFactory()
@@ -120,13 +124,14 @@ class TestPromotion(unittest.TestCase):
             percentage=promotion.percentage,
             expiry_date="shouldn't like this",
             start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            products=promotion.products
         ))
         promotion_deserialized = Promotion()
         try:
             promotion_deserialized.deserialize(json.loads(json_data))
         except DataValidationError:
             self.assertRaises(DataValidationError)
-    
+
     def test_promotion_save_exceptions(self):
         """ Test Product save exceptions"""
         promotion = PromotionFactory()
@@ -135,59 +140,15 @@ class TestPromotion(unittest.TestCase):
             promotion.save()
         except DataValidationError:
             self.assertRaises(DataValidationError)
-        
+
         promotion.percentage = -12
         try:
             promotion.save()
         except DataValidationError:
             self.assertRaises(DataValidationError)
-        
+
         promotion.code = ''
         try:
             promotion.save()
         except DataValidationError:
             self.assertRaises(DataValidationError)
-
-class TestProduct(unittest.TestCase):
-    """ Test cases for Products """
-
-    @classmethod
-    def setUpClass(cls):
-        """ Run once before all test cases """
-        app.debug = False
-
-    @classmethod
-    def tearDownClass(cls):
-        """ Run once after all test cases """
-        pass
-
-    def setUp(self):
-        """ Runs before each test """
-        db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
-
-    def tearDown(self):
-        """ Runs after each test """
-        db = connect('promotion')
-        db.drop_database('promotion') # clean up the last tests
-
-    def test_product_serialize(self):
-        """ Test Product serialization """
-        test_id = 'ae12GH1vfg2KC51a'
-        self.assertEqual(Product.objects.count(), 0)
-        Product(product_id=test_id).save()
-        self.assertEqual(Product.objects.count(), 1)
-        product = Product.objects.get(product_id=test_id).serialize()
-        self.assertEqual(product['product_id'], test_id)
-
-    def test_delete(self):
-        """ Delete a Promotion by ID """
-        promotion = Promotion(code='SAVE30',
-                              percentage=70,
-                              start_date='2019-10-01',
-                              expiry_date='2019-11-01')
-        promotion.save()
-        self.assertEqual(len(Promotion.all()), 1)
-        promotion.delete()
-        self.assertEqual((len(Promotion.all())), 0)
-
