@@ -87,7 +87,7 @@ class TestPromotion(unittest.TestCase):
         self.assertEqual(promotions[0].code, "SAVE50")
 
     def test_promotion_deserialize(self):
-        """ Test Product deserialization"""
+        """ Test Promotion deserialization"""
         promotion = PromotionFactory()
         json_data = json.dumps(dict(
             code=promotion.code,
@@ -107,7 +107,7 @@ class TestPromotion(unittest.TestCase):
                          promotion_deserialized.start_date)
 
     def test_promotion_deserialize_exceptions(self):
-        """ Test Product deserialization exceptions"""
+        """ Test Promotion deserialization exceptions"""
         promotion = PromotionFactory()
         json_data = json.dumps(dict(
             percentage=promotion.percentage,
@@ -133,7 +133,7 @@ class TestPromotion(unittest.TestCase):
             self.assertRaises(DataValidationError)
 
     def test_promotion_save_exceptions(self):
-        """ Test Product save exceptions"""
+        """ Test Promotion save exceptions"""
         promotion = PromotionFactory()
         promotion.percentage = 131
         try:

@@ -25,7 +25,6 @@ import logging
 import sys
 
 from flask import abort, jsonify, make_response, request, url_for
-from mongoengine import ValidationError
 from werkzeug.exceptions import NotFound
 
 from flask_api import status  # HTTP Status Codes
@@ -151,6 +150,11 @@ def read_a_promotion(promotion_id):
 ######################################################################
 @app.route('/promotions', methods=['POST'])
 def add_promotions():
+    """
+    Add a promotion
+
+    This endpoint will return a Promotion based on it's id and the URL to that promotion
+    """
     app.logger.info('Request to create a promotion')
     check_content_type('application/json')
     promotion = Promotion()
