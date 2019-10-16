@@ -76,6 +76,11 @@ class TestPromotionServer(unittest.TestCase):
         """ Read a promotion by given ID """
         test_promotion = PromotionFactory()
         test_promotion.save()
+        for p in test_promotion.products:
+            print(p.product_id)
+            p.save()
+            print(p)
+        print(Product.all())
         resp = self.app.get('/promotions/{}'.format(test_promotion.id),
                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)

@@ -64,6 +64,19 @@ class Product(Document):
             "product_id": self.product_id,
         }
 
+    @classmethod
+    def find(cls, product_id):
+        """ Read a product by it's ID """
+        try:
+            product = cls.objects.get(id=product_id)
+            return product
+        except DoesNotExist:
+            return None
+
+    @classmethod
+    def all(cls):
+        return cls.objects()
+
 class Promotion(Document):
     """
     Class that represents a Promotion
@@ -86,7 +99,7 @@ class Promotion(Document):
         return {
             "id": str(self.id),
             "code": self.code,
-            "products": [product.serialize() for product in self.products],
+            "products": [Product.find(product.id).serialize() for product in self.products],
             "percentage": self.percentage,
             "expiry_date": self.expiry_date.strftime("%m-%d-%Y"),
             "start_date": self.start_date.strftime("%m-%d-%Y"),
@@ -105,7 +118,7 @@ class Promotion(Document):
             self.expiry_date = datetime.strptime(data['expiry_date'], "%m-%d-%Y")
             self.start_date = datetime.strptime(data['start_date'], "%m-%d-%Y")
             self.products = []
-            for product in data['products'].split(','):
+            for product in data['products']:
                 p = Product(product_id=product)
                 p.save()
                 self.products.append(p)

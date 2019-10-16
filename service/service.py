@@ -63,7 +63,7 @@ def list_promotions():
 # Apply a promotion on products
 ######################################################################
 @app.route('/promotions/<promotion_id>/apply', methods=['POST'])
-def apply_a_promotioin(promotion_id):
+def apply_a_promotion(promotion_id):
     """
     Apply a promotion on a given set of products together with their prices
 
