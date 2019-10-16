@@ -15,7 +15,6 @@ from mongoengine import connect
 
 from datetime import datetime
 from service.service import app, initialize_logging
-from service.models import Product
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -95,6 +94,7 @@ class TestPromotionServer(unittest.TestCase):
             percentage=promotion.percentage,
             expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
             start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            products=promotion.products
         )), content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Make sure location header is set
@@ -106,6 +106,7 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
         self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertTrue(set(promotion.products) == set(new_prom['products']))
         # Check that the location header was correct
         resp = self.app.get(location, content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -114,6 +115,7 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
         self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertTrue(set(promotion.products) == set(new_prom['products']))
 
     def test_apply_a_promotion_on_products(self):
         """ Apply a promotion on a set of products together with their prices """
@@ -121,11 +123,7 @@ class TestPromotionServer(unittest.TestCase):
         # Set up fake data
         product_ids = ['ae12GH1vfg2KC51a', 'c2GH374g2C51dacg', 'c3573HEYv02351dh']
         prices = [200, 352.12, 101.99]
-        products = []
-        for product_id in product_ids[:-1]: # exclude the last one
-            product = Product(product_id)
-            product.save()
-            products.append(product)
+        products = product_ids[:-1]
         test_promotion = PromotionFactory()
         test_promotion.products = products
         test_promotion.percentage = 70
@@ -138,7 +136,7 @@ class TestPromotionServer(unittest.TestCase):
 
         # Create ground truth
         ground_truth = {}
-        eligible_ids = [product['product_id'] for product in test_promotion.products]
+        eligible_ids = test_promotion.products
         for product_id, price in zip(product_ids, prices):
             if product_id in eligible_ids:
                 ground_truth[product_id] = price * (test_promotion.percentage/100.0)

@@ -26,9 +26,12 @@ import logging
 from datetime import datetime
 from mongoengine import Document, StringField, ListField, \
     ReferenceField, IntField, DateTimeField, connect, DoesNotExist
+from datetime import datetime
+
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
+
 
 class Validation:
     """
@@ -44,20 +47,9 @@ class Validation:
     def valid_perc(cls, percentage):
         """ Check if the given precentage value is in range 0 to 100 """
         if percentage < 0 or percentage > 100:
-            raise DataValidationError('Percentage should be in the range of 0 to 100')
+            raise DataValidationError(
+                'Percentage should be in the range of 0 to 100')
 
-class Product(Document):
-    """
-    Class that represents a product id
-    """
-    product_id = StringField(default='')
-
-    def serialize(self):
-        """ Serializes a Product into a dictionary """
-        return {
-            "id": str(self.id),
-            "product_id": self.product_id,
-        }
 
 class Promotion(Document):
     """
@@ -71,8 +63,9 @@ class Promotion(Document):
 
     # Table Schema
     code = StringField(required=True, validation=Validation.valid_code)
-    products = ListField(ReferenceField(Product))
-    percentage = IntField(required=True, unique=False, validation=Validation.valid_perc)
+    products = ListField(StringField())
+    percentage = IntField(required=True, unique=False,
+                          validation=Validation.valid_perc)
     expiry_date = DateTimeField(required=True)
     start_date = DateTimeField(required=True)
 
@@ -81,7 +74,7 @@ class Promotion(Document):
         return {
             "id": str(self.id),
             "code": self.code,
-            "products": [product.serialize() for product in self.products],
+            "products": self.products,
             "percentage": self.percentage,
             "expiry_date": self.expiry_date.strftime("%m-%d-%Y"),
             "start_date": self.start_date.strftime("%m-%d-%Y"),
@@ -97,10 +90,13 @@ class Promotion(Document):
         try:
             self.code = data['code']
             self.percentage = data['percentage']
-            self.expiry_date = datetime.strptime(data['expiry_date'], "%m-%d-%Y")
+            self.expiry_date = datetime.strptime(
+                data['expiry_date'], "%m-%d-%Y")
             self.start_date = datetime.strptime(data['start_date'], "%m-%d-%Y")
+            self.products = data['products']
         except KeyError as error:
-            raise DataValidationError('Invalid promotion: missing ' + error.args[0])
+            raise DataValidationError(
+                'Invalid promotion: missing ' + error.args[0])
         except ValueError:
             raise DataValidationError('Invalid time format')
         return self
