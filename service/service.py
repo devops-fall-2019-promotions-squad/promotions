@@ -162,6 +162,26 @@ def add_promotions():
                          })
 
 ######################################################################
+# UPDATE PROMOTION
+######################################################################
+@app.route('/promotions/<promotion_id>', methods=['PUT'])
+def update_promotions():
+    """
+    Function to update a promotion
+    """
+    app.logger.info('Request to update promotion with promotion id {}'.format(promotion_id))
+    check_content_type('application/json')
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+    promotion.deserialize(request.get_json())
+    promotion.id = promotion_id
+    promotion.save()
+    app.logger.info('Promotion with id {} successfully updated'.format(promotion_id))
+    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+
+######################################################################
 # LIST ALL APIS
 ######################################################################
 @app.route('/', methods=['GET'])
