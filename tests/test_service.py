@@ -95,6 +95,7 @@ class TestPromotionServer(unittest.TestCase):
             percentage=promotion.percentage,
             expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
             start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            products=','.join([prod.product_id for prod in promotion.products])
         )), content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         # Make sure location header is set
@@ -106,6 +107,7 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
         self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertTrue(set([prod.product_id for prod in promotion.products]) == set([item['product_id'] for item in new_prom['products']]))
         # Check that the location header was correct
         resp = self.app.get(location, content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -114,6 +116,7 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
         self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertTrue(set([prod.product_id for prod in promotion.products]) == set([item['product_id'] for item in new_prom['products']]))
 
     def test_apply_a_promotion_on_products(self):
         """ Apply a promotion on a set of products together with their prices """
