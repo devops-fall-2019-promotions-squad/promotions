@@ -25,8 +25,7 @@ import logging
 # Create the MongoEngine object to be initialized later in init_db()
 from datetime import datetime
 from mongoengine import Document, StringField, ListField, \
-    ReferenceField, IntField, DateTimeField, connect, DoesNotExist
-from datetime import datetime
+    IntField, DateTimeField, connect, DoesNotExist
 
 
 class DataValidationError(Exception):

@@ -13,7 +13,6 @@ from unittest.mock import patch
 from flask_api import status    # HTTP Status Codes
 from mongoengine import connect
 
-from datetime import datetime
 from service.service import app, initialize_logging
 from .promotion_factory import PromotionFactory
 
@@ -103,18 +102,25 @@ class TestPromotionServer(unittest.TestCase):
         # Check the data is correct
         new_prom = resp.get_json()
         self.assertEqual(new_prom['code'], promotion.code, "Codes do not match")
-        self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
-        self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
-        self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertEqual(new_prom['percentage'],
+                         promotion.percentage, "Percentage do not match")
+        self.assertEqual(new_prom['expiry_date'],
+                         promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
+        self.assertEqual(new_prom['start_date'],
+                         promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
         self.assertTrue(set(promotion.products) == set(new_prom['products']))
         # Check that the location header was correct
         resp = self.app.get(location, content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_prom = resp.get_json()
-        self.assertEqual(new_prom['code'], promotion.code, "Codes do not match")
-        self.assertEqual(new_prom['percentage'], promotion.percentage, "Percentage do not match")
-        self.assertEqual(new_prom['expiry_date'], promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
-        self.assertEqual(new_prom['start_date'], promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+        self.assertEqual(new_prom['code'],
+                         promotion.code, "Codes do not match")
+        self.assertEqual(new_prom['percentage'],
+                         promotion.percentage, "Percentage do not match")
+        self.assertEqual(new_prom['expiry_date'],
+                         promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
+        self.assertEqual(new_prom['start_date'],
+                         promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
         self.assertTrue(set(promotion.products) == set(new_prom['products']))
 
     def test_apply_a_promotion_on_products(self):
@@ -156,30 +162,30 @@ class TestPromotionServer(unittest.TestCase):
         """ Update a promotion, given a promotion id """
         # create a promotion to update
         test_promotion = PromotionFactory()
-        resp = self.app.post('/promotions', 
-                            json=test_promotion.serialize(), 
-                            content_type = 'application/json')
+        resp = self.app.post('/promotions',
+                             json=test_promotion.serialize(),
+                             content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         #update a promotion
         new_promotion = resp.get_json()
         new_promotion['code'] = 'SAVENEW'
         resp = self.app.put('/promotions/{}'.format(new_promotion['id']),
-                            json=new_promotion, 
-                            content_type = 'application/json')
+                            json=new_promotion,
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         updated_promotion = resp.get_json()
         self.assertEqual(updated_promotion['code'], 'SAVENEW')
         self.assertEqual(updated_promotion['id'], new_promotion['id'])
-    
+
     def test_update_a_nonexist_promotion(self):
         """ Update a promotion, given a nonexist promotion id """
         fake_test_promotion_id = '666f6f2d6261722d71757578'
 
         #update a promotion
         resp = self.app.put('/promotions/{}'.format(fake_test_promotion_id),
-                            json={}, 
-                            content_type = 'application/json')
+                            json={},
+                            content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_apply_a_promotion_with_bad_request_data(self):
