@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/devops-fall-2019-promotions-squad/promotions.svg?branch=master)](https://travis-ci.org/devops-fall-2019-promotions-squad/promotions)
+
 # promotions
 Our squad is taking charge of the promotions functionality for an eCommerce web site backend which is a collection RESTful services for a client. 
 
