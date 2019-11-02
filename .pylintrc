@@ -28,7 +28,7 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python module names) to load,
 # usually to register additional checkers.
-load-plugins=pylint_mongoengine
+#load-plugins=
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -143,7 +143,11 @@ disable=print-statement,
         global-statement,
         no-member,
         invalid-name,
-        too-few-public-methods
+        too-few-public-methods,
+        unsubscriptable-object,
+        not-an-iterable,
+        wrong-import-position,
+        too-many-arguments
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -34,6 +34,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 # Import the routes After the Flask app is created
 from service import service, models
+from .models import Promotion
 
 # Set up logging for production
 service.initialize_logging()
@@ -42,12 +43,9 @@ app.logger.info(70 * '*')
 app.logger.info('  P R O M O T I O N   S E R V I C E   R U N N I N G  '.center(70, '*'))
 app.logger.info(70 * '*')
 
-try:
-    service.init_db()
-except Exception as error:
-    app.logger.critical('%s: Cannot continue', error)
-
-    # gunicorn requires exit code 4 to stop spawning workers when they die
-    sys.exit(4)
+@app.before_first_request
+def init_db(dbname="promotions"):
+    """ Initlaize the CouchDB """
+    Promotion.init_db(dbname)
 
 app.logger.info('Service initialized!')

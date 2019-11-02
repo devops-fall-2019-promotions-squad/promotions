@@ -11,9 +11,9 @@ import json
 import logging
 from unittest.mock import patch
 from flask_api import status    # HTTP Status Codes
-from mongoengine import connect
 
 from service.service import app, initialize_logging
+from service.models import Promotion
 from .promotion_factory import PromotionFactory
 
 ######################################################################
@@ -29,21 +29,11 @@ class TestPromotionServer(unittest.TestCase):
         app.debug = False
         initialize_logging(logging.INFO)
 
-    @classmethod
-    def tearDownClass(cls):
-        """ Run once after all test cases """
-        pass
-
     def setUp(self):
         """ Runs before each test """
-        db = connect('promotion')
-        db.drop_database('promotion')  # clean up the last tests
+        Promotion.init_db("test")
+        Promotion.remove_all()
         self.app = app.test_client()
-
-    def tearDown(self):
-        """ Runs after each test """
-        db = connect('promotion')
-        db.drop_database('promotion')  # clean up the last tests
 
     def test_list_all_promotions(self):
         """ Get a list of all Promotions in DB """
@@ -91,8 +81,8 @@ class TestPromotionServer(unittest.TestCase):
         resp = self.app.post('/promotions', data=json.dumps(dict(
             code=promotion.code,
             percentage=promotion.percentage,
-            expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
-            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
             products=promotion.products
         )), content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
@@ -105,9 +95,9 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'],
                          promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'],
-                         promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
+                         promotion.expiry_date, "Expiry date does not match")
         self.assertEqual(new_prom['start_date'],
-                         promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+                         promotion.start_date, "Start date does not match")
         self.assertTrue(set(promotion.products) == set(new_prom['products']))
         # Check that the location header was correct
         resp = self.app.get(location, content_type='application/json')
@@ -118,9 +108,9 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['percentage'],
                          promotion.percentage, "Percentage do not match")
         self.assertEqual(new_prom['expiry_date'],
-                         promotion.expiry_date.strftime("%m-%d-%Y"), "Expiry date does not match")
+                         promotion.expiry_date, "Expiry date does not match")
         self.assertEqual(new_prom['start_date'],
-                         promotion.start_date.strftime("%m-%d-%Y"), "Start date does not match")
+                         promotion.start_date, "Start date does not match")
         self.assertTrue(set(promotion.products) == set(new_prom['products']))
 
     def test_apply_a_promotion_on_products(self):
@@ -257,3 +247,25 @@ class TestPromotionServer(unittest.TestCase):
         list_all_mock.side_effect = Exception()
         resp = self.app.get('/promotions')
         self.assertEqual(resp.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def test_db_connection(self):
+        """ Test DB connection """
+        Promotion.disconnect()
+        promotion = PromotionFactory()
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
+            products=promotion.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        Promotion.connect()
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
+            products=promotion.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
