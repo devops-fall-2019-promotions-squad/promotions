@@ -7,7 +7,6 @@ Test cases can be run with:
 
 import unittest
 import json
-from mongoengine import connect
 from service import app
 from service.models import Promotion, DataValidationError
 from .promotion_factory import PromotionFactory
@@ -25,20 +24,10 @@ class TestPromotion(unittest.TestCase):
         """ Run once before all test cases """
         app.debug = False
 
-    @classmethod
-    def tearDownClass(cls):
-        """ Run once after all test cases """
-        pass
-
     def setUp(self):
         """ Runs before each test """
-        db = connect('promotion')
-        db.drop_database('promotion')  # clean up the last tests
-
-    def tearDown(self):
-        """ Runs after each test """
-        db = connect('promotion')
-        db.drop_database('promotion')  # clean up the last tests
+        Promotion.init_db("test")
+        Promotion.remove_all()
 
     def test_find_by_code(self):
         """ Find Promotions by code """
@@ -61,10 +50,12 @@ class TestPromotion(unittest.TestCase):
         """ Find a Promotion by ID """
         Promotion(code='SAVE30',
                   percentage=70,
+                  products=[],
                   start_date='2019-10-01',
                   expiry_date='2019-11-01').save()
         save50 = Promotion(code="SAVE50",
                            percentage=50,
+                           products=[],
                            start_date='2019-06-01',
                            expiry_date='2019-06-30')
         save50.save()
@@ -79,6 +70,7 @@ class TestPromotion(unittest.TestCase):
         """ Create a promotion """
         promotion = Promotion(code="SAVE50",
                               percentage=50,
+                              products=[],
                               start_date='2019-06-01',
                               expiry_date='2019-06-30')
         promotion.save()
@@ -92,8 +84,8 @@ class TestPromotion(unittest.TestCase):
         json_data = json.dumps(dict(
             code=promotion.code,
             percentage=promotion.percentage,
-            expiry_date=promotion.expiry_date.strftime("%m-%d-%Y"),
-            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
             products=promotion.products
         ))
         promotion_deserialized = Promotion()
@@ -111,7 +103,7 @@ class TestPromotion(unittest.TestCase):
         promotion = PromotionFactory()
         json_data = json.dumps(dict(
             percentage=promotion.percentage,
-            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            start_date=promotion.start_date,
         ))
         promotion_deserialized = Promotion()
         try:
@@ -123,7 +115,7 @@ class TestPromotion(unittest.TestCase):
             code=promotion.code,
             percentage=promotion.percentage,
             expiry_date="shouldn't like this",
-            start_date=promotion.start_date.strftime("%m-%d-%Y"),
+            start_date=promotion.start_date,
             products=promotion.products
         ))
         promotion_deserialized = Promotion()
@@ -147,8 +139,62 @@ class TestPromotion(unittest.TestCase):
         except DataValidationError:
             self.assertRaises(DataValidationError)
 
+        promotion = PromotionFactory()
         promotion.code = ''
         try:
             promotion.save()
         except DataValidationError:
             self.assertRaises(DataValidationError)
+
+        promotion = PromotionFactory()
+        promotion.code = None
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+        promotion = PromotionFactory()
+        promotion.percentage = None
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+        promotion = PromotionFactory()
+        promotion.products = None
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+        promotion = PromotionFactory()
+        promotion.expiry_date = None
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+        promotion = PromotionFactory()
+        promotion.start_date = None
+        try:
+            promotion.save()
+        except DataValidationError:
+            self.assertRaises(DataValidationError)
+
+    def test_delete_nonexist(self):
+        """ Test deleting a nonexist Promotion"""
+        promotion = PromotionFactory()
+        promotion.id = '1cak41-nonexist'
+        try:
+            promotion.delete()
+        except KeyError:
+            self.assertRaises(KeyError)
+
+    def test_update_nonexist(self):
+        """ Test deleting a nonexist Promotion"""
+        promotion = PromotionFactory()
+        promotion.id = '1cak41-nonexist'
+        try:
+            promotion.update()
+        except KeyError:
+            self.assertRaises(KeyError)

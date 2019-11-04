@@ -16,10 +16,12 @@ class PromotionFactory(factory.Factory):
         model = Promotion
     code = FuzzyChoice(choices=['SAVE15', 'SAVE20', 'SAVE30'])
     percentage = FuzzyChoice(choices=[10, 40, 30, 25, 5, 0, 15])
-    expiry_date = FuzzyChoice(choices=[datetime.strptime(
-        date, "%Y-%m-%d") for date in ['2019-11-11', '2018-01-04', '2019-10-01', '2020-05-03']])
-    start_date = FuzzyChoice(choices=[datetime.strptime(
-        date, "%Y-%m-%d") for date in ['2019-10-09', '2018-11-02', '2019-03-20', '2020-05-13']])
+    expiry_date = FuzzyChoice(choices=[int(datetime.strptime(
+        date, "%Y-%m-%d").timestamp()) \
+            for date in ['2019-11-11', '2018-01-04', '2019-10-01', '2020-05-03']])
+    start_date = FuzzyChoice(choices=[int(datetime.strptime(
+        date, "%Y-%m-%d").timestamp()) \
+            for date in ['2019-10-09', '2018-11-02', '2019-03-20', '2020-05-13']])
     products = FuzzyChoice(
         choices=[['MacBook', 'Airpods'], ['iPhone', 'iPad']])
 

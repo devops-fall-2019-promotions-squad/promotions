@@ -259,11 +259,6 @@ def internal_server_error(error):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-def init_db():
-    """ Initializes the MongoDB """
-    global app
-    Promotion.init_db(app)
-
 def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers['Content-Type'] == content_type:

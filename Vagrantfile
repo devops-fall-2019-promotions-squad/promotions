@@ -64,13 +64,13 @@ Vagrant.configure(2) do |config|
   SHELL
 
   ######################################################################
-  # Add MongoDB docker container
+  # Add CouchDB docker container
   ######################################################################
-  # docker run -d --name mongo -p 27017:27017 -v mongo_data:/var/lib/mongo/data mongo
-  config.vm.provision :docker do |d|
-    d.pull_images "mongo:bionic"
-    d.run "mongo:bionic",
-       args: "-d --name mongo -p 27017:27017 -v mongo_data:/var/lib/mongo/data"
+  # docker run -d --name couchdb -p 5984:5984 -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass couchdb
+  config.vm.provision "docker" do |d|
+    d.pull_images "couchdb"
+    d.run "couchdb",
+      args: "--restart=always -d --name couchdb -p 5984:5984 -v couchdb:/opt/couchdb/data -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass"
   end
 
 end
