@@ -204,9 +204,11 @@ class Promotion():
         """ Query that finds Promotions by their id """
         try:
             document = cls.database[promotion_id]
-            return Promotion().deserialize(document)
         except KeyError:
             return None
+        if '_rev' in document:
+            return Promotion().deserialize(document)
+        return None
 
     @classmethod
     def find_by_code(cls, code):
