@@ -6,10 +6,14 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
+        const start_date = new Date(parseInt(res.start_date)).toLocaleDateString("en-US")
+        const expiry_date = new Date(parseInt(res.expiry_date)).toLocaleDateString("en-US")
         $("#promotion_id").val(res.id);
         $("#promotion_code").val(res.code);
         $("#promotion_percentage").val(res.percentage);
         $("#promotion_products").val(res.products);
+        $("#promotion_start_date").val(start_date);
+        $("#promotion_expiry_date").val(expiry_date);
     }
 
     /// Clears all form fields
@@ -17,6 +21,8 @@ $(function () {
         $("#promotion_code").val("");
         $("#promotion_percentage").val("");
         $("#promotion_products").val("");
+        $("#promotion_start_date").val("");
+        $("#promotion_expiry_date").val("");
     }
 
     // Updates the flash message area
@@ -24,6 +30,89 @@ $(function () {
         $("#flash_message").empty();
         $("#flash_message").append(message);
     }
+
+    // ****************************************
+    // Create a Promotion
+    // ****************************************
+
+    $("#create-btn").click(function () {
+
+        const code = $("#promotion_code").val();
+        const percentage = $("#promotion_percentage").val();
+        const products_str = $("#promotion_products").val();
+        const start_date = new Date($("#promotion_start_date").val()).getTime();
+        const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
+
+        const products = products_str.replace(" ", "").split(",");
+
+        const data = {
+            "code": code,
+            "percentage": percentage,
+            "products": products,
+            "start_date": start_date,
+            "expiry_date": expiry_date,
+        };
+
+        console.log(JSON.stringify(data));
+
+        var ajax = $.ajax({
+            type: "POST",
+            url: "/promotions",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+    });
+
+
+    // ****************************************
+    // Update a Promotion
+    // ****************************************
+
+    $("#update-btn").click(function () {
+
+        const promotion_id = $("#promotion_id").val();
+        const code = $("#promotion_code").val();
+        const percentage = $("#promotion_percentage").val();
+        const products_str = $("#promotion_products").val();
+        const start_date = new Date($("#promotion_start_date").val()).getTime();
+        const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
+
+        const products = products_str.replace(" ", "").split(",");
+
+        const data = {
+            "code": code,
+            "percentage": percentage,
+            "products": products,
+            "start_date": start_date,
+            "expiry_date": expiry_date,
+        };
+
+        var ajax = $.ajax({
+                type: "PUT",
+                url: "/promotions/" + promotion_id,
+                contentType: "application/json",
+                data: JSON.stringify(data)
+            })
+
+        ajax.done(function(res){
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+
+    });
 
     // ****************************************
     // Retrieve a Promotion
@@ -45,7 +134,6 @@ $(function () {
         })
 
         ajax.done(function(res){
-            //alert(res.toSource())
             update_form_data(res)
             flash_message("Success")
         });
@@ -117,7 +205,6 @@ $(function () {
         })
 
         ajax.done(function(res){
-            // alert(res.toSource())
             $("#search_results").empty();
             $("#search_results").append('<table class="table-striped" cellpadding="10">');
             let header = '<thead><tr>'
@@ -131,7 +218,9 @@ $(function () {
             let firstPromotion = "";
             for(let i = 0; i < res.length; i++) {
                 let promotion = res[i];
-                let row = "<tr><td>"+promotion.id+"</td><td>"+promotion.code+"</td><td>"+promotion.percentage+"</td><td>"+promotion.start_date+"</td><td>"+promotion.expiry_date+"</td><td>"+promotion.products+"</td><td></tr>";
+                const start_date = new Date(parseInt(promotion.start_date)).toLocaleDateString("en-US")
+                const expiry_date = new Date(parseInt(promotion.expiry_date)).toLocaleDateString("en-US")
+                let row = "<tr><td>"+promotion.id+"</td><td>"+promotion.code+"</td><td>"+promotion.percentage+"</td><td>"+start_date+"</td><td>"+expiry_date+"</td><td>"+promotion.products+"</td><td></tr>";
                 $("#search_results").append(row);
                 if (i == 0) {
                     firstPromotion = promotion;

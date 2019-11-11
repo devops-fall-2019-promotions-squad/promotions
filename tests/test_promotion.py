@@ -56,8 +56,8 @@ class TestPromotion(unittest.TestCase):
         save50 = Promotion(code="SAVE50",
                            percentage=50,
                            products=[],
-                           start_date='2019-06-01',
-                           expiry_date='2019-06-30')
+                           start_date=43155131,
+                           expiry_date=5361332)
         save50.save()
 
         promotion = Promotion.find(save50.id)
@@ -71,8 +71,8 @@ class TestPromotion(unittest.TestCase):
         promotion = Promotion(code="SAVE50",
                               percentage=50,
                               products=[],
-                              start_date='2019-06-01',
-                              expiry_date='2019-06-30')
+                              start_date=43155131,
+                              expiry_date=5361332)
         promotion.save()
         promotions = Promotion.all()
         self.assertEqual(len(promotions), 1)

@@ -142,13 +142,16 @@ class Promotion():
         """
         try:
             self.code = data['code']
-            self.percentage = data['percentage']
-            self.expiry_date = data['expiry_date']
-            self.start_date = data['start_date']
+            self.percentage = int(data['percentage'])
+            self.expiry_date = int(data['expiry_date'])
+            self.start_date = int(data['start_date'])
             self.products = data['products']
         except KeyError as error:
             raise DataValidationError(
                 'Invalid promotion: missing ' + error.args[0])
+        except ValueError as error:
+            raise DataValidationError(
+                'Invalid promotion value: ' + error.args[0])
 
         # if there is no id and the data has one, assign it
         if not self.id and '_id' in data:
