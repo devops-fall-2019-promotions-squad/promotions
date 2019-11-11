@@ -186,13 +186,12 @@ def update_promotions(promotion_id):
     app.logger.info('Promotion with id {} successfully updated'.format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
-
 ######################################################################
 # LIST ALL APIS
 ######################################################################
-@app.route('/', methods=['GET'])
+@app.route('/apis', methods=['GET'])
 def list_all_apis():
-    """ Root URL response. Returns all of the APIs  """
+    """ Returns all of the APIs  """
     app.logger.info('Request for api list')
     func_list = []
     for rule in app.url_map.iter_rules():
@@ -202,6 +201,14 @@ def list_all_apis():
     return make_response(jsonify(name='Promotion REST API Service',
                                  version='1.0',
                                  functions=func_list), status.HTTP_200_OK)
+
+######################################################################
+# VISIT INDEX PAGE
+######################################################################
+@app.route('/', methods=['GET'])
+def index():
+    """ Root URL response. Send back the promotion index page.  """
+    return app.send_static_file('index.html')
 
 ######################################################################
 # Error Handlers

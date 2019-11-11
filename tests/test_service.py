@@ -222,14 +222,34 @@ class TestPromotionServer(unittest.TestCase):
 
     def test_delete_a_promotion(self):
         """ Delete a promotion by given ID """
-        test_promotion = PromotionFactory()
-        test_promotion.save()
-        resp = self.app.delete('/promotions/{}'.format(test_promotion.id))
+        promotion = PromotionFactory()
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
+            products=promotion.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        promotion.id = resp.get_json()['id']
+        resp = self.app.get('/promotions/{}'.format(promotion.id),
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        resp = self.app.delete('/promotions/{}'.format(promotion.id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        resp = self.app.get('/promotions/{}'.format(promotion.id),
+                            content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.delete('/promotions/{}'.format(promotion.id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_list_all_apis(self):
         """ List all APIs """
-        resp = self.app.get('/', content_type='application/json')
+        resp = self.app.get('/apis', content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         api_cnt = len(list(app.url_map.iter_rules())) - 1 # exclude static
