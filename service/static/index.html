@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="static/css/blue_bootstrap.min.css">
     <script type="text/javascript" src = "static/js/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="static/js/rest_api.js"></script>
+    <script type="text/javascript" src="static/js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-3.3.7.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -22,62 +24,108 @@
           </table>
         </div>
 
-        <div class="col-md-12" id="form_data">
-          Create, Retrieve, Update, and Delete a Promotion:
-          <div class="well">
-            <div class="form-horizontal">
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_id">Promotion ID:</label>
-                <div class="col-sm-6">
-                  <input type="text" class="form-control" id="promotion_id" placeholder="Enter ID of Promotion">
-                </div>
-                <div class="col-sm-4">
-                  <button type="submit" class="btn btn-primary" id="retrieve-btn">Retrieve</button>
-                  <button type="submit" class="btn btn-primary" id="delete-btn">Delete</button>
-                </div>
-              </div>
-            </div> <!-- form div -->
+        <div id="tabs">
+          <ul class="nav nav-pills">
+            <li role="presentation" class="active"><a data-toggle="tab" href="#tabs-1">CURD</a></li>
+            <li role="presentation"><a data-toggle="tab" href="#tabs-2">Action</a></li>
+          </ul>
+          <div id="tabs-1">
+            <div class="col-md-12" id="form_data">
+              Create, Retrieve, Update, and Delete a Promotion:
+              <div class="well">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_id">Promotion ID:</label>
+                    <div class="col-sm-6">
+                      <input type="text" class="form-control" id="promotion_id" placeholder="Enter ID of Promotion">
+                    </div>
+                    <div class="col-sm-4">
+                      <button type="submit" class="btn btn-primary" id="retrieve-btn">Retrieve</button>
+                      <button type="submit" class="btn btn-primary" id="delete-btn">Delete</button>
+                    </div>
+                  </div>
+                </div> <!-- form div -->
 
-            <div class="form-horizontal">
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_code">Code:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="promotion_code" placeholder="Enter code for Promotion">
-                </div>
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_code">Code:</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="promotion_code" placeholder="Enter code for Promotion">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_percentage">Percentage:</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="promotion_percentage" placeholder='Enter percentage for Promotion, 0 < percentage < 100'>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_products">Product IDs:</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="promotion_products" placeholder="Enter Product IDs for Promotion">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_start_date">Start Date:</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="promotion_start_date" placeholder="Enter start date for Promotion in format MM/DD/YYYY">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="promotion_expiry_date">Expiry Date:</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="promotion_expiry_date" placeholder="Enter expiry date for Promotion in format MM/DD/YYYY">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
+                      <button type="submit" class="btn btn-primary" id="clear-btn">Clear</button>
+                      <button type="submit" class="btn btn-success" id="create-btn">Create</button>
+                      <button type="submit" class="btn btn-warning" id="update-btn">Update</button>
+                    </div>
+                  </div>
+                </div> <!-- form div -->
               </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_percentage">Percentage:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="promotion_percentage" placeholder='Enter percentage for Promotion, 0 < percentage < 100'>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_products">Product IDs:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="promotion_products" placeholder="Enter Product IDs for Promotion">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_start_date">Start Date:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="promotion_start_date" placeholder="Enter start date for Promotion in format MM/DD/YYYY">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="control-label col-sm-2" for="promotion_expiry_date">Expiry Date:</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="promotion_expiry_date" placeholder="Enter expiry date for Promotion in format MM/DD/YYYY">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  <button type="submit" class="btn btn-primary" id="search-btn">Search</button>
-                  <button type="submit" class="btn btn-primary" id="clear-btn">Clear</button>
-                  <button type="submit" class="btn btn-success" id="create-btn">Create</button>
-                  <button type="submit" class="btn btn-warning" id="update-btn">Update</button>
-                </div>
-              </div>
-          </div> <!-- form div -->
+            </div>
+          </div>
+          <div id="tabs-2">
+            <div class="col-md-12" id="form_data">
+              Apply a promotion to get discounted prices for products:
+              <div class="well">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="action-promotion-id">Promotion ID:</label>
+                    <div class="col-sm-8">
+                      <input type="text" class="form-control" id="action-promotion-id" placeholder="Enter ID of Promotion">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="action-product-list">Products:</label>
+                    <div id="action-product-list" class="col-sm-10">
+                      <div>
+                        <div class="col-sm-4">
+                          <input type="text" class="form-control product-id" placeholder="Enter Product ID">
+                        </div>
+                        <div class="col-sm-4">
+                          <input type="text" class="form-control product-price" placeholder="Enter Product Price">
+                        </div>
+                        <div class="col-sm-4">
+                          <input type="text" class="form-control product-new-price" disabled=true placeholder="New Product Price">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button type="submit" class="btn btn-primary" id="apply-btn">Apply</button>
+                      <button type="submit" class="btn btn-primary" id="add-product-btn">Add Product</button>
+                    </div>
+                  </div>
+                </div> <!-- form div -->
+              </div> <!-- form div -->
+            </div>
+          </div>
         </div>
 
         <!-- Search Results -->

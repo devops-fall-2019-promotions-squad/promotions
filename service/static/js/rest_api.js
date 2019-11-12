@@ -4,6 +4,9 @@ $(function () {
     //  U T I L I T Y   F U N C T I O N S
     // ****************************************
 
+    // Tabs switching
+    $( "#tabs" ).tabs();
+
     // Updates the form with data from the response
     function update_form_data(res) {
         const start_date = new Date(parseInt(res.start_date)).toLocaleDateString("en-US")
@@ -31,6 +34,31 @@ $(function () {
         $("#flash_message").append(message);
     }
 
+    // Add a product item
+    $("#add-product-btn").click(function () {
+        $("#action-product-list").append(`
+        <div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control product-id" placeholder="Enter Product ID">
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control product-price" placeholder="Enter Product Price">
+            </div>
+            <div class="col-sm-4">
+                <input type="text" class="form-control product-new-price" disabled=true placeholder="New Product Price">
+            </div>
+        </div>`);
+    });
+
+    // Shows product new prices with action result
+    function update_action_result(res) {
+        res['products'].forEach((product, idx) => {
+            cell = $("#action-product-list").children("div")[idx];
+            price_cell = $(cell).find(".product-new-price");
+            $(price_cell).val(parseFloat(product["price"]).toFixed(2));
+        });
+    }
+
     // ****************************************
     // Create a Promotion
     // ****************************************
@@ -52,8 +80,6 @@ $(function () {
             "start_date": start_date,
             "expiry_date": expiry_date,
         };
-
-        console.log(JSON.stringify(data));
 
         var ajax = $.ajax({
             type: "POST",
@@ -241,6 +267,42 @@ $(function () {
             flash_message(res.responseJSON.message)
         });
 
+    });
+
+    // ****************************************
+    // Apply a Promotion
+    // ****************************************
+
+    $("#apply-btn").click(function () {
+
+        const promotion_id = $("#action-promotion-id").val();
+        const products = [];
+
+        $('#action-product-list').children('div').each(function () {
+            id = $(this).find('.product-id').val();
+            price = $(this).find('.product-price').val();
+            products.push({"product_id": id, "price": price});
+        });
+
+        const data = {
+            "products": products,
+        };
+
+        var ajax = $.ajax({
+            type: "POST",
+            url: "/promotions/" + promotion_id + '/apply',
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        });
+
+        ajax.done(function(res){
+            update_action_result(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
     });
 
 })
