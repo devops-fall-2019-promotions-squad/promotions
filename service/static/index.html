@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="static/css/blue_bootstrap.min.css">
     <script type="text/javascript" src = "static/js/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="static/js/rest_api.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="static/js/jquery-ui-1.12.1.min.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-3.3.7.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -24,9 +25,9 @@
         </div>
 
         <div id="tabs">
-          <ul>
-              <li><a href="#tabs-1">CURD</a></li>
-              <li><a href="#tabs-2">Action</a></li>
+          <ul class="nav nav-pills">
+            <li role="presentation" class="active"><a data-toggle="tab" href="#tabs-1">CURD</a></li>
+            <li role="presentation"><a data-toggle="tab" href="#tabs-2">Action</a></li>
           </ul>
           <div id="tabs-1">
             <div class="col-md-12" id="form_data">
