@@ -98,13 +98,14 @@ def apply_a_promotion(promotion_id):
     for product in products:
         product_id = product['product_id']
         try:
-            price = float(product['price'])
+            new_price = float(product['price'])
         except ValueError:
             raise DataValidationError('The given product prices cannot convert to a float number')
         if product_id in eligible_ids:
-            product['price'] = price * (promotion.percentage / 100.0)
+            new_price = new_price * (promotion.percentage / 100.0)
         else:
             non_eligible_ids.append(product_id)
+        product['price'] = new_price
         products_with_new_prices.append(product)
 
     if len(non_eligible_ids) > 0:
