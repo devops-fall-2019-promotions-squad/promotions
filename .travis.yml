@@ -22,7 +22,7 @@ before_script:
   - curl -X GET http://localhost:5984/
   - curl -X PUT http://admin:pass@localhost:5984/test
   - gunicorn --log-level=critical --bind=0.0.0.0:5000 service:app &  # start a Web server in the background
-  - sleep 30 # give Web server some time to bind to sockets, etc
+  - sleep 3 # give Web server some time to bind to sockets, etc
 
 script:
   - nosetests
