@@ -289,3 +289,7 @@ class TestPromotionServer(unittest.TestCase):
             products=promotion.products
         )), content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+    def test_promotion_reset(self):
+        resp = self.app.delete('/promotions/reset')
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
