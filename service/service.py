@@ -297,3 +297,12 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.setLevel(log_level)
         app.logger.propagate = False
         app.logger.info('Logging handler established')
+
+######################################################################
+# DELETE ALL PET DATA (for testing only)
+######################################################################
+@app.route('/promotions/reset', methods=['DELETE'])
+def promotions_reset():
+    """ Removes all pets from the database """
+    Promotion.remove_all()
+    return make_response('', status.HTTP_204_NO_CONTENT)

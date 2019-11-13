@@ -1,3 +1,7 @@
+sudo: required
+addons:
+  chrome: stable
+
 language: python
 python:
   - "3.6.8"
@@ -10,12 +14,15 @@ before_install:
   - docker run -d --name couchdb -p 5984:5984 -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass
     couchdb:latest
   - docker ps -a
+  - sudo apt-get install -y chromium-chromedriver python3-selenium
 
 install: pip install -r requirements.txt
 
 before_script:
   - curl -X GET http://localhost:5984/
   - curl -X PUT http://admin:pass@localhost:5984/test
+  - gunicorn --log-level=critical --bind=0.0.0.0:5000 service:app &  # start a Web server in the background
+  - sleep 3 # give Web server some time to bind to sockets, etc
 
 script:
   - nosetests
@@ -23,3 +30,4 @@ script:
 
 after_success:
   - codecov
+
