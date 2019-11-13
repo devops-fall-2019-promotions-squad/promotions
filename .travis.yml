@@ -1,4 +1,6 @@
 sudo: required
+addons:
+  chrome: stable
 
 language: python
 python:
@@ -12,7 +14,7 @@ before_install:
   - docker run -d --name couchdb -p 5984:5984 -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=pass
     couchdb:latest
   - docker ps -a
-  - apt-get install -y chromium-chromedriver python3-selenium
+  - sudo apt-get install -y chromium-chromedriver python3-selenium
 
 install: pip install -r requirements.txt
 
@@ -29,6 +31,3 @@ script:
 after_success:
   - codecov
 
-addons:
-  chrome: stable
-  
