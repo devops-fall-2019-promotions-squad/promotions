@@ -14,7 +14,7 @@ $(function () {
         $("#promotion_id").val(res.id);
         $("#promotion_code").val(res.code);
         $("#promotion_percentage").val(res.percentage);
-        $("#promotion_products").val(res.products);
+        $("#promotion_product_ids").val(res.products);
         $("#promotion_start_date").val(start_date);
         $("#promotion_expiry_date").val(expiry_date);
     }
@@ -23,7 +23,7 @@ $(function () {
     function clear_form_data() {
         $("#promotion_code").val("");
         $("#promotion_percentage").val("");
-        $("#promotion_products").val("");
+        $("#promotion_product_ids").val("");
         $("#promotion_start_date").val("");
         $("#promotion_expiry_date").val("");
     }
@@ -67,7 +67,7 @@ $(function () {
 
         const code = $("#promotion_code").val();
         const percentage = $("#promotion_percentage").val();
-        const products_str = $("#promotion_products").val();
+        const products_str = $("#promotion_product_ids").val();
         const start_date = new Date($("#promotion_start_date").val()).getTime();
         const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
 
@@ -108,7 +108,7 @@ $(function () {
         const promotion_id = $("#promotion_id").val();
         const code = $("#promotion_code").val();
         const percentage = $("#promotion_percentage").val();
-        const products_str = $("#promotion_products").val();
+        const products_str = $("#promotion_product_ids").val();
         const start_date = new Date($("#promotion_start_date").val()).getTime();
         const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
 
