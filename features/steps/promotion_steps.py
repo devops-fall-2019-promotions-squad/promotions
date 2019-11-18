@@ -18,9 +18,27 @@ from selenium.webdriver.support import expected_conditions
 
 WAIT_SECONDS = int(getenv('WAIT_SECONDS', '60'))
 
-@given('the server is started')
+@given('the following promotions')
 def step_impl(context):
-    context.resp = requests.delete(context.base_url + '/promotions/reset')
+    """ Delete all Promotions and load new ones """
+    headers = {'Content-Type': 'application/json'}
+    context.resp = requests.delete(context.base_url + '/promotions/reset', headers=headers)
+    expect(context.resp.status_code).to_equal(204)
+    create_url = context.base_url + '/promotions'
+    for row in context.table:
+        
+        data = {
+            "code": row['code'],
+            "percentage": int(row['percentage']),
+            "products": row['products'].split(','),
+            "start_date": row['start_date'],
+            "expiry_date": row['expiry_date']
+            }
+        payload = json.dumps(data)
+        print(payload)
+        context.resp = requests.post(create_url, data=payload, headers=headers)
+        expect(context.resp.status_code).to_equal(201)
+
 
 @when('I visit the "Home Page"')
 def step_impl(context):
