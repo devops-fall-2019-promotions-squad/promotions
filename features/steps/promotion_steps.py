@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions
+from datetime import datetime
 
 WAIT_SECONDS = int(getenv('WAIT_SECONDS', '60'))
 
@@ -31,11 +32,10 @@ def step_impl(context):
             "code": row['code'],
             "percentage": int(row['percentage']),
             "products": row['products'].split(','),
-            "start_date": row['start_date'],
-            "expiry_date": row['expiry_date']
+            "start_date": int(datetime.strptime(row['start_date'], "%m/%d/%Y").timestamp()),
+            "expiry_date": int(datetime.strptime(row['expiry_date'], "%m/%d/%Y").timestamp())
             }
         payload = json.dumps(data)
-        print(payload)
         context.resp = requests.post(create_url, data=payload, headers=headers)
         expect(context.resp.status_code).to_equal(201)
 
@@ -129,3 +129,28 @@ def step_impl(context, text_string, element_name):
         )
     )
     expect(found).to_be(True)
+
+@when('I change "{element_name}" to "{text_string}"')
+def step_impl(context, element_name, text_string):
+    element_id = 'promotion_' + element_name.lower().replace(" ", "_")
+    element = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.presence_of_element_located((By.ID, element_id))
+    )
+    element.clear()
+    element.send_keys(text_string)
+
+@then('I should see "{name}" in the results')
+def step_impl(context, name):
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'search_results'),
+            name
+        )
+    )
+    expect(found).to_be(True)
+
+@then('I should not see "{name}" in the results')
+def step_impl(context, name):
+    element = context.driver.find_element_by_id('search_results')
+    error_msg = "I should not see '%s' in '%s'" % (name, element.text)
+    ensure(name in element.text, False, error_msg)
