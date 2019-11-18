@@ -4,7 +4,10 @@ Feature: The promotion service back-end
     So that I can keep track of all my promotions
 
 Background:
-    Given the server is started
+    Given the following promotions
+        | code      | percentage    | products    | start_date | expiry_date |
+        | Save 25   | 75            |10001,10002  | 10/01/2019 | 12/01/2019  |
+        | Save 50   | 50            |20001,20002  | 11/01/2019 | 01/01/2020  |
 
 Scenario: The server is running
     When I visit the "Home Page"
@@ -35,3 +38,22 @@ Scenario: Create a Promotion
     And I should see "17427,13826" in the "Product IDs" field
     And I should see "11/15/2019" in the "Start Date" field
     And I should see "12/15/2019" in the "Expiry Date" field
+
+Scenario: Update a Promotion
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
+    When I change "Code" to "Discount 25"
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I copy the "ID" field
+    And I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see "Discount 25" in the "Code" field
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see "Discount 25" in the results
+    Then I should not see "Save 25" in the results
