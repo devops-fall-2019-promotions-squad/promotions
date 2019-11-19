@@ -1,12 +1,12 @@
 ---
 # This manifest deploys a Python Flask application with a CouchDB database
 applications:
-- name: nyu-promotion-service-f19
+- name: nyu-promotion-service-f19-prod
   path: .
   instances: 1
   memory: 128M
   routes:
-  - route: nyu-promotion-service-f19.mybluemix.net
+  - route: nyu-promotion-service-f19-prod.mybluemix.net
   disk_quota: 1024M
   buildpack: python_buildpack
   timeout: 180
