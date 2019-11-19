@@ -58,6 +58,15 @@ Scenario: Update a Promotion
     Then I should see "Discount 25" in the results
     Then I should not see "Save 25" in the results
 
+Scenario: Delete a Promotion
+    When I press the "Delete" button
+    Then I should see the message "Promotion has been Deleted!"
+    When I copy the "ID" field
+    And I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found"
+
 Scenario: Apply Get Discounted Prices Action on A Set of Products
     When I visit the "Home Page"
     And I set the "Code" to "Save 25"
