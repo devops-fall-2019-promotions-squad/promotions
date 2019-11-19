@@ -9,8 +9,8 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
-        const start_date = new Date(parseInt(res.start_date)).toLocaleDateString("en-US")
-        const expiry_date = new Date(parseInt(res.expiry_date)).toLocaleDateString("en-US")
+        const start_date = to_date_string(parseInt(res.start_date));
+        const expiry_date = to_date_string(parseInt(res.expiry_date));
         $("#promotion_id").val(res.id);
         $("#promotion_code").val(res.code);
         $("#promotion_percentage").val(res.percentage);
@@ -34,18 +34,35 @@ $(function () {
         $("#flash_message").append(message);
     }
 
+    // Date string to Timestamp
+    function to_timestamp(date_str) {
+        let date = new Date(date_str);
+        let ts_utc =  Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        return parseInt(Math.round(ts_utc/1000));
+    }
+
+    // Timestamp to Date string
+    function to_date_string(unix_timestamp) {
+        let date = new Date(unix_timestamp*1000);
+        let MM = (date.getUTCMonth()+1).toString().padStart(2, "0");
+        let DD = date.getUTCDate().toString().padStart(2, "0");
+        let YYYY = date.getFullYear();
+        return `${MM}/${DD}/${YYYY}`;
+    }
+
     // Add a product item
     $("#add-product-btn").click(function () {
-        $("#action-product-list").append(`
+        let current_size = $("#promotion_action_products").children().length;
+        $("#promotion_action_products").append(`
         <div>
             <div class="col-sm-4">
-                <input type="text" class="form-control product-id" placeholder="Enter Product ID">
+                <input id=promotion_action_product_id_${current_size+1} type="text" class="form-control product-id" placeholder="Enter Product ID">
             </div>
             <div class="col-sm-4">
-                <input type="text" class="form-control product-price" placeholder="Enter Product Price">
+                <input id=promotion_action_product_price_${current_size+1} type="text" class="form-control product-price" placeholder="Enter Product Price">
             </div>
             <div class="col-sm-4">
-                <input type="text" class="form-control product-new-price" disabled=true placeholder="New Product Price">
+                <input id=promotion_action_product_new_price_${current_size+1} type="text" class="form-control product-new-price" disabled=true placeholder="New Product Price">
             </div>
         </div>`);
     });
@@ -53,7 +70,7 @@ $(function () {
     // Shows product new prices with action result
     function update_action_result(res) {
         res['products'].forEach((product, idx) => {
-            cell = $("#action-product-list").children("div")[idx];
+            cell = $("#promotion_action_products").children("div")[idx];
             price_cell = $(cell).find(".product-new-price");
             $(price_cell).val(parseFloat(product["price"]).toFixed(2));
         });
@@ -68,8 +85,8 @@ $(function () {
         const code = $("#promotion_code").val();
         const percentage = $("#promotion_percentage").val();
         const products_str = $("#promotion_product_ids").val();
-        const start_date = new Date($("#promotion_start_date").val()).getTime();
-        const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
+        const start_date = to_timestamp($("#promotion_start_date").val());
+        const expiry_date = to_timestamp($("#promotion_expiry_date").val());
 
         const products = products_str.replace(" ", "").split(",");
 
@@ -109,8 +126,8 @@ $(function () {
         const code = $("#promotion_code").val();
         const percentage = $("#promotion_percentage").val();
         const products_str = $("#promotion_product_ids").val();
-        const start_date = new Date($("#promotion_start_date").val()).getTime();
-        const expiry_date = new Date($("#promotion_expiry_date").val()).getTime()
+        const start_date = to_timestamp($("#promotion_start_date").val());
+        const expiry_date = to_timestamp($("#promotion_expiry_date").val());
 
         const products = products_str.replace(" ", "").split(",");
 
@@ -244,8 +261,8 @@ $(function () {
             let firstPromotion = "";
             for(let i = 0; i < res.length; i++) {
                 let promotion = res[i];
-                const start_date = new Date(parseInt(promotion.start_date)).toLocaleDateString("en-US")
-                const expiry_date = new Date(parseInt(promotion.expiry_date)).toLocaleDateString("en-US")
+                const start_date = to_date_string(parseInt(promotion.start_date));
+                const expiry_date = to_date_string(parseInt(promotion.expiry_date));
                 let row = "<tr><td>"+promotion.id+"</td><td>"+promotion.code+"</td><td>"+promotion.percentage+"</td><td>"+start_date+"</td><td>"+expiry_date+"</td><td>"+promotion.products+"</td><td></tr>";
                 $("#search_results").append(row);
                 if (i == 0) {
@@ -275,10 +292,10 @@ $(function () {
 
     $("#apply-btn").click(function () {
 
-        const promotion_id = $("#action-promotion-id").val();
+        const promotion_id = $("#promotion_action_id").val();
         const products = [];
 
-        $('#action-product-list').children('div').each(function () {
+        $('#promotion_action_products').children('div').each(function () {
             id = $(this).find('.product-id').val();
             price = $(this).find('.product-price').val();
             products.push({"product_id": id, "price": price});
