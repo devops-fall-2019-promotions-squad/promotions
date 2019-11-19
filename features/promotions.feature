@@ -72,3 +72,25 @@ Scenario: Read a Promotion
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
     And I should see "12/01/2019" in the "Expiry Date" field
+
+
+Scenario: Apply Get Discounted Prices Action on A Set of Products
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
+    And I should see "10001,10002" in the "Product IDs" field
+    And I should see "10/01/2019" in the "Start Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
+    When I copy the "ID" field
+    And I press the "Action Tab" button
+    And I paste the "Action ID" field
+    And I set the "Action Product ID 1" to "10001"
+    And I set the "Action Product Price 1" to "100"
+    And I press the "Add Product" button
+    And I set the "Action Product ID 2" to "10010"
+    And I set the "Action Product Price 2" to "200"
+    And I press the "Apply" button
+    Then I should see "75" in the "Action Product New Price 1" field
+    And I should see "200" in the "Action Product New Price 2" field
