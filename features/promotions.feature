@@ -117,3 +117,9 @@ Scenario: Query a Promotion
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
     And I should see "12/01/2019" in the "Expiry Date" field
+
+Scenario: List Promotions
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see "Save 25" in the results
+    And I should see "Save 50" in the results
