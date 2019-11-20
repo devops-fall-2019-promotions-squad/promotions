@@ -59,6 +59,11 @@ Scenario: Update a Promotion
     Then I should not see "Save 25" in the results
 
 Scenario: Delete a Promotion
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
     When I press the "Delete" button
     Then I should see the message "Promotion has been Deleted!"
     When I copy the "ID" field
