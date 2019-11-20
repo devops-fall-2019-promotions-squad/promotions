@@ -58,6 +58,21 @@ Scenario: Update a Promotion
     Then I should see "Discount 25" in the results
     Then I should not see "Save 25" in the results
 
+Scenario: Read a Promotion
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    When I copy the "ID" field
+    And I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
+    And I should see "10001,10002" in the "Product IDs" field
+    And I should see "10/01/2019" in the "Start Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
+
 Scenario: Delete a Promotion
     When I visit the "Home Page"
     And I set the "Code" to "Save 25"
