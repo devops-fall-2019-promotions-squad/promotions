@@ -107,3 +107,13 @@ Scenario: Apply Get Discounted Prices Action on A Set of Products
     And I press the "Apply" button
     Then I should see "75" in the "Action Product New Price 1" field
     And I should see "200" in the "Action Product New Price 2" field
+
+Scenario: Query a Promotion
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
+    And I should see "10001,10002" in the "Product IDs" field
+    And I should see "10/01/2019" in the "Start Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
