@@ -73,6 +73,19 @@ Scenario: Read a Promotion
     And I should see "10/01/2019" in the "Start Date" field
     And I should see "12/01/2019" in the "Expiry Date" field
 
+Scenario: Delete a Promotion
+    When I visit the "Home Page"
+    And I set the "Code" to "Save 25"
+    And I press the "Search" button
+    Then I should see "Save 25" in the "Code" field
+    And I should see "75" in the "Percentage" field
+    When I press the "Delete" button
+    Then I should see the message "Promotion has been Deleted!"
+    When I copy the "ID" field
+    And I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found"
 
 Scenario: Apply Get Discounted Prices Action on A Set of Products
     When I visit the "Home Page"
