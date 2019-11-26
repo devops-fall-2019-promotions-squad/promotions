@@ -57,8 +57,7 @@ api = Api(app,
 
 # query string arguments
 promotion_args = reqparse.RequestParser()
-promotion_args.add_argument('promotion-code', type=str, required=False, help='List Promotions by code')
-
+promotion_args.add_argument('promotion-code', type=str, required=False, help='List Promotions by code', location='args')
 #####################################################################
 # PATH: /promotions
 #####################################################################
