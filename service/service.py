@@ -28,37 +28,69 @@ from flask import abort, jsonify, make_response, request, url_for
 from werkzeug.exceptions import NotFound
 
 from flask_api import status  # HTTP Status Codes
+from flask_restplus import Api, Resource, fields, reqparse, inputs
 from service.models import DataValidationError, Promotion
 
 # Import Flask application
 from . import app
 
+######################################################################
+# VISIT INDEX PAGE
+######################################################################
+# Route to '/' has to be placed before Swagger docs
+@app.route('/', methods=['GET'])
+def index():
+    """ Root URL response. Send back the promotion index page.  """
+    return app.send_static_file('index.html')
 
 ######################################################################
-# LIST PROMOTIONS
+# Configure Swagger before initilaizing it
 ######################################################################
-@app.route('/promotions', methods=['GET'])
-def list_promotions():
-    """
-    List promotions.
+api = Api(app,
+          version='1.0.0',
+          title='Promotion Demo REST API Service',
+          description='This is a sample Promotion server.',
+          default='promotions',
+          default_label='Promotion operations',
+          doc='/apidocs/',
+         )
 
-    This endpoint will return all promotions if no promotion code is provided.
-    If a promotion code is provided, it returns a list of promotions having
-    the that promotion code.
-    While no promotion is found, no matter a code is provided or not, rather
-    than raising a NotFound, we return an empty list to indicate that nothing
-    is found.
-    """
-    code = request.args.get('promotion-code')
-    promotions = []
-    if code:
-        app.logger.info('Request for promotion list with code %s', code)
-        promotions = Promotion.find_by_code(code)
-    else:
-        app.logger.info('Request for promotion list')
-        promotions = Promotion.all()
+# query string arguments
+promotion_args = reqparse.RequestParser()
+promotion_args.add_argument('code', type=str, required=False, help='List Promotions by code')
 
-    return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
+#####################################################################
+# PATH: /promotions
+#####################################################################
+@api.route('/promotions', strict_slashes=False)
+class PromotionCollection(Resource):
+    """ Handles all interactions with collections of Promotion """
+    #------------------------------------------------------------------
+    # LIST ALL PROMOTIONS
+    #------------------------------------------------------------------
+    @api.expect(promotion_args, validate=True)
+    def get(self):
+        """
+        List promotions.
+
+        This endpoint will return all promotions if no promotion code is provided.
+        If a promotion code is provided, it returns a list of promotions having
+        the that promotion code.
+        While no promotion is found, no matter a code is provided or not, rather
+        than raising a NotFound, we return an empty list to indicate that nothing
+        is found.
+        """
+        app.logger.info('Request to list Promotions...')
+        code = request.args.get('promotion-code')
+        promotions = []
+        if code:
+            app.logger.info('Request for promotion list with code %s', code)
+            promotions = Promotion.find_by_code(code)
+        else:
+            app.logger.info('Request for promotion list')
+            promotions = Promotion.all()
+
+        return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
 
 ######################################################################
 # Apply a promotion on products
@@ -204,14 +236,6 @@ def list_all_apis():
                                  functions=func_list), status.HTTP_200_OK)
 
 ######################################################################
-# VISIT INDEX PAGE
-######################################################################
-@app.route('/', methods=['GET'])
-def index():
-    """ Root URL response. Send back the promotion index page.  """
-    return app.send_static_file('index.html')
-
-######################################################################
 # Error Handlers
 ######################################################################
 @app.errorhandler(DataValidationError)
@@ -299,10 +323,10 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.info('Logging handler established')
 
 ######################################################################
-# DELETE ALL PET DATA (for testing only)
+# DELETE ALL PROMOTION DATA (for testing only)
 ######################################################################
 @app.route('/promotions/reset', methods=['DELETE'])
 def promotions_reset():
-    """ Removes all pets from the database """
+    """ Removes all promotions from the database """
     Promotion.remove_all()
     return make_response('', status.HTTP_204_NO_CONTENT)
