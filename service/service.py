@@ -51,7 +51,7 @@ api = Api(app,
           title='Promotion Demo REST API Service',
           description='This is a sample Promotion server.',
           default='promotions',
-          default_label='Pet shop operations',
+          default_label='Promotion operations',
           doc='/apidocs/',
          )
 
@@ -323,10 +323,10 @@ def initialize_logging(log_level=logging.INFO):
         app.logger.info('Logging handler established')
 
 ######################################################################
-# DELETE ALL PET DATA (for testing only)
+# DELETE ALL PROMOTION DATA (for testing only)
 ######################################################################
 @app.route('/promotions/reset', methods=['DELETE'])
 def promotions_reset():
-    """ Removes all pets from the database """
+    """ Removes all promotions from the database """
     Promotion.remove_all()
     return make_response('', status.HTTP_204_NO_CONTENT)
