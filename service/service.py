@@ -23,7 +23,6 @@ All service functions should be defined here
 
 import logging
 import sys
-from functools import wraps
 
 from flask import abort, jsonify, make_response, request, url_for
 from werkzeug.exceptions import NotFound
