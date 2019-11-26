@@ -23,6 +23,7 @@ All service functions should be defined here
 
 import logging
 import sys
+from functools import wraps
 
 from flask import abort, jsonify, make_response, request, url_for
 from werkzeug.exceptions import NotFound
@@ -44,7 +45,7 @@ def index():
     return app.send_static_file('index.html')
 
 ######################################################################
-# Configure Swagger before initilaizing it
+# Configure Swagger before initializing it
 ######################################################################
 api = Api(app,
           version='1.0.0',
@@ -57,7 +58,7 @@ api = Api(app,
 
 # query string arguments
 promotion_args = reqparse.RequestParser()
-promotion_args.add_argument('code', type=str, required=False, help='List Promotions by code')
+promotion_args.add_argument('promotion-code', type=str, required=False, help='List Promotions by code')
 
 #####################################################################
 # PATH: /promotions
@@ -81,7 +82,8 @@ class PromotionCollection(Resource):
         is found.
         """
         app.logger.info('Request to list Promotions...')
-        code = request.args.get('promotion-code')
+        args = promotion_args.parse_args()
+        code = args['promotion-code']
         promotions = []
         if code:
             app.logger.info('Request for promotion list with code %s', code)
@@ -91,6 +93,28 @@ class PromotionCollection(Resource):
             promotions = Promotion.all()
 
         return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
+    
+    #------------------------------------------------------------------
+    # ADD A NEW PROMOTION
+    #------------------------------------------------------------------
+    def post(self):
+        """
+        Add a promotion
+
+        This endpoint will return a Promotion based on it's id and the URL to that promotion
+        """
+        app.logger.info('Request to create a Promotion')
+        check_content_type('application/json')
+        promotion = Promotion()
+        promotion.deserialize(api.payload)
+        promotion.save()
+        message = promotion.serialize()
+        # TODO: Change to api.url_for('read_a_promotion', ...) PromotionResource after class PromotionResource is implemented.
+        location_url = url_for('read_a_promotion', promotion_id=promotion.id, _external=True)
+        return make_response(jsonify(message), status.HTTP_201_CREATED,
+                            {
+                                'Location': location_url
+                            })
 
 ######################################################################
 # Apply a promotion on products
@@ -177,28 +201,6 @@ def read_a_promotion(promotion_id):
     if not promotion:
         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
-
-######################################################################
-# ADD PROMOTIONS
-######################################################################
-@app.route('/promotions', methods=['POST'])
-def add_promotions():
-    """
-    Add a promotion
-
-    This endpoint will return a Promotion based on it's id and the URL to that promotion
-    """
-    app.logger.info('Request to create a promotion')
-    check_content_type('application/json')
-    promotion = Promotion()
-    promotion.deserialize(request.get_json())
-    promotion.save()
-    message = promotion.serialize()
-    location_url = url_for('read_a_promotion', promotion_id=promotion.id, _external=True)
-    return make_response(jsonify(message), status.HTTP_201_CREATED,
-                         {
-                             'Location': location_url
-                         })
 
 ######################################################################
 # UPDATE PROMOTION
