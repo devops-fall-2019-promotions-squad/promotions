@@ -281,15 +281,6 @@ def mediatype_not_supported(error):
                    error='Unsupported media type',
                    message=message), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
-@app.errorhandler(status.HTTP_500_INTERNAL_SERVER_ERROR)
-def internal_server_error(error):
-    """ Handles unexpected server error with 500_SERVER_ERROR """
-    message = str(error)
-    app.logger.error(message)
-    return jsonify(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                   error='Internal Server Error',
-                   message=message), status.HTTP_500_INTERNAL_SERVER_ERROR
-
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
