@@ -293,3 +293,8 @@ class TestPromotionServer(unittest.TestCase):
     def test_promotion_reset(self):
         resp = self.app.delete('/promotions/reset')
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_get_index(self):
+        resp = self.app.get('/')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue('text/html' in resp.headers['Content-Type'])
