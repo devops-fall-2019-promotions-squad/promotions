@@ -138,7 +138,6 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     @api.doc('delete_promotions', security='apikey')
     @api.response(204, 'Promotion deleted')
-    @token_required
     def delete(self, promotion_id):
         """
         Delete a Promotion
@@ -153,8 +152,80 @@ class PromotionResource(Resource):
         return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
-# OLD CODE
+# LIST ALL APIS
 ######################################################################
+@app.route('/apis', methods=['GET'])
+def list_all_apis():
+    """ Returns all of the APIs  """
+    app.logger.info('Request for api list')
+    func_list = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            methods = ','.join(rule.methods)
+            func_list.append(
+                (rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
+    return make_response(jsonify(name='Promotion REST API Service',
+                                 version='1.0',
+                                 functions=func_list), status.HTTP_200_OK)
+
+
+######################################################################
+# Error Handlers
+######################################################################
+@app.errorhandler(DataValidationError)
+def request_validation_error(error):
+    """ Handles Value Errors from bad data """
+    return bad_request(error)
+
+
+@app.errorhandler(status.HTTP_400_BAD_REQUEST)
+def bad_request(error):
+    """ Handles bad reuests with 400_BAD_REQUEST """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
+
+
+@app.errorhandler(status.HTTP_404_NOT_FOUND)
+def not_found(error):
+    """ Handles resources not found with 404_NOT_FOUND """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_404_NOT_FOUND,
+                   error='Not Found',
+                   message=message), status.HTTP_404_NOT_FOUND
+
+
+@app.errorhandler(status.HTTP_405_METHOD_NOT_ALLOWED)
+def method_not_supported(error):
+    """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                   error='Method not Allowed',
+                   message=message), status.HTTP_405_METHOD_NOT_ALLOWED
+
+
+@app.errorhandler(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+def mediatype_not_supported(error):
+    """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                   error='Unsupported media type',
+                   message=message), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+
+
+@app.errorhandler(status.HTTP_500_INTERNAL_SERVER_ERROR)
+def internal_server_error(error):
+    """ Handles unexpected server error with 500_SERVER_ERROR """
+    message = str(error)
+    app.logger.error(message)
+    return jsonify(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                   error='Internal Server Error',
+                   message=message), status.HTTP_500_INTERNAL_SERVER_ERROR
 
 ######################################################################
 # Apply a promotion on products
