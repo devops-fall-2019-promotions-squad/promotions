@@ -109,9 +109,8 @@ class PromotionCollection(Resource):
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
-        # TODO: Change to api.url_for('read_a_promotion', ...) PromotionResource after class PromotionResource is implemented.
-        location_url = url_for(
-            'read_a_promotion', promotion_id=promotion.id, _external=True)
+        location_url = api.url_for(PromotionResource, promotion_id=promotion.id, _external=True)
+
         return make_response(jsonify(message), status.HTTP_201_CREATED,
                              {
             'Location': location_url
@@ -132,6 +131,27 @@ class PromotionResource(Resource):
     PUT /promotion{promotion_id} - Update a Promotion with the promotion_id
     DELETE /promotion{promotion_id} -  Deletes a Promotion with the promotion_id
     """
+    # ------------------------------------------------------------------
+    # RETRIEVE A PROMOTION
+    # ------------------------------------------------------------------
+    @api.doc('read_a_promotion')
+    @api.response(404, 'Promotion not found')
+    def get(self, promotion_id):
+        """
+        Retrieve a single Promotion
+
+        This endpoint will return a Promotion based on it's id
+        """
+        app.logger.info("Request to Retrieve a promotion with id [%s]", promotion_id)
+        promotion = Promotion.find(promotion_id)
+        if not promotion:
+            api.abort(status.HTTP_404_NOT_FOUND, 
+                      "404 Not Found: Promotion with id '{}' was not found.".format(promotion_id)
+                      )
+        # TODO: change to "Promotion with id '{}' was not found.".format(promotion_id))
+        # after change the BDD file.
+
+        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
     # ------------------------------------------------------------------
     # DELETE A PROMOTION
@@ -150,23 +170,6 @@ class PromotionResource(Resource):
         if promotion:
             promotion.delete()
         return '', status.HTTP_204_NO_CONTENT
-
-######################################################################
-# READ A PROMOTION
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotion(promotion_id):
-    """
-    Read a single promotion
-
-    This endpoint will return a Promotion based on it's id
-    """
-    app.logger.info('Read a promotion with id: %s', promotion_id)
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound(
-            "Promotion with id '{}' was not found.".format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # UPDATE PROMOTION
@@ -282,17 +285,6 @@ def bad_request(error):
     return jsonify(status=status.HTTP_400_BAD_REQUEST,
                    error='Bad Request',
                    message=message), status.HTTP_400_BAD_REQUEST
-
-
-@app.errorhandler(status.HTTP_404_NOT_FOUND)
-def not_found(error):
-    """ Handles resources not found with 404_NOT_FOUND """
-    message = str(error)
-    app.logger.warning(message)
-    return jsonify(status=status.HTTP_404_NOT_FOUND,
-                   error='Not Found',
-                   message=message), status.HTTP_404_NOT_FOUND
-
 
 @app.errorhandler(status.HTTP_405_METHOD_NOT_ALLOWED)
 def method_not_supported(error):
