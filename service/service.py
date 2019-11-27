@@ -144,7 +144,6 @@ class PromotionResource(Resource):
         if not promotion:
             api.abort(status.HTTP_404_NOT_FOUND, 
                       "Promotion with id '{}' was not found.".format(promotion_id))
-        #return promotion.serialize(), status.HTTP_200_OK
         return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
