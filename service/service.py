@@ -109,7 +109,6 @@ class PromotionCollection(Resource):
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
-        # TODO: Change to api.url_for('read_a_promotion', ...) PromotionResource after class PromotionResource is implemented.
         location_url = api.url_for(PromotionResource, promotion_id=promotion.id, _external=True)
 
         return make_response(jsonify(message), status.HTTP_201_CREATED,
@@ -147,7 +146,10 @@ class PromotionResource(Resource):
         promotion = Promotion.find(promotion_id)
         if not promotion:
             api.abort(status.HTTP_404_NOT_FOUND, 
-                      "Promotion with id '{}' was not found.".format(promotion_id))
+                      "404 Not Found")
+        # TODO: change to "Promotion with id '{}' was not found.".format(promotion_id))
+        # after change the BDD file.
+
         return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
     # ------------------------------------------------------------------
