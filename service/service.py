@@ -146,7 +146,8 @@ class PromotionResource(Resource):
         promotion = Promotion.find(promotion_id)
         if not promotion:
             api.abort(status.HTTP_404_NOT_FOUND, 
-                      "404 Not Found")
+                      "404 Not Found: Promotion with id '{}' was not found.".format(promotion_id)
+                      )
         # TODO: change to "Promotion with id '{}' was not found.".format(promotion_id))
         # after change the BDD file.
 
