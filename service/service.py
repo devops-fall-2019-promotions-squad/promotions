@@ -268,15 +268,6 @@ def bad_request(error):
                    error='Bad Request',
                    message=message), status.HTTP_400_BAD_REQUEST
 
-@app.errorhandler(status.HTTP_404_NOT_FOUND)
-def not_found(error):
-    """ Handles resources not found with 404_NOT_FOUND """
-    message = str(error)
-    app.logger.warning(message)
-    return jsonify(status=status.HTTP_404_NOT_FOUND,
-                   error='Not Found',
-                   message=message), status.HTTP_404_NOT_FOUND
-
 @app.errorhandler(status.HTTP_405_METHOD_NOT_ALLOWED)
 def method_not_supported(error):
     """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
