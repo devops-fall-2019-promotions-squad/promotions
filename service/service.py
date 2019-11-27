@@ -216,22 +216,6 @@ def delete_promotions(promotion_id):
         promotion.delete()
     return make_response('', status.HTTP_204_NO_CONTENT)
 
-# ######################################################################
-# # READ A PROMOTION
-# ######################################################################
-# @app.route('/promotions/<promotion_id>', methods=['GET'])
-# def read_a_promotion(promotion_id):
-#     """
-#     Read a single promotion
-
-#     This endpoint will return a Promotion based on it's id
-#     """
-#     app.logger.info('Read a promotion with id: %s', promotion_id)
-#     promotion = Promotion.find(promotion_id)
-#     if not promotion:
-#         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-#     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
-
 ######################################################################
 # UPDATE PROMOTION
 ######################################################################
