@@ -108,11 +108,43 @@ class PromotionCollection(Resource):
         promotion.save()
         message = promotion.serialize()
         # TODO: Change to api.url_for('read_a_promotion', ...) PromotionResource after class PromotionResource is implemented.
-        location_url = url_for('read_a_promotion', promotion_id=promotion.id, _external=True)
+        location_url = api.url_for(PromotionResource, promotion_id=promotion.id, _external=True)
         return make_response(jsonify(message), status.HTTP_201_CREATED,
                             {
                                 'Location': location_url
                             })
+
+######################################################################
+#  PATH: /promotions/{id}
+######################################################################
+@api.route('/promotions/<promotion_id>')
+@api.param('promotion_id', 'The Promotion identifier')
+class PromotionResource(Resource):
+    """
+    PetResource class
+
+    Allows the manipulation of a single Promotion
+    GET /promotion{id} - Returns a Promotion with the id
+    PUT /promotion{id} - Update a Promotion with the id
+    DELETE /promotion{id} -  Deletes a Promotion with the id
+    """
+
+    #------------------------------------------------------------------
+    # RETRIEVE A PROMOTION
+    #------------------------------------------------------------------
+    def get(self, promotion_id):
+        """
+        Retrieve a single Promotion
+
+        This endpoint will return a Promotion based on it's id
+        """
+        app.logger.info("Request to Retrieve a promotion with id [%s]", promotion_id)
+        promotion = Promotion.find(promotion_id)
+        if not promotion:
+            api.abort(status.HTTP_404_NOT_FOUND, 
+                      "Promotion with id '{}' was not found.".format(promotion_id))
+        #return promotion.serialize(), status.HTTP_200_OK
+        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # Apply a promotion on products
@@ -184,21 +216,21 @@ def delete_promotions(promotion_id):
         promotion.delete()
     return make_response('', status.HTTP_204_NO_CONTENT)
 
-######################################################################
-# READ A PROMOTION
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['GET'])
-def read_a_promotion(promotion_id):
-    """
-    Read a single promotion
+# ######################################################################
+# # READ A PROMOTION
+# ######################################################################
+# @app.route('/promotions/<promotion_id>', methods=['GET'])
+# def read_a_promotion(promotion_id):
+#     """
+#     Read a single promotion
 
-    This endpoint will return a Promotion based on it's id
-    """
-    app.logger.info('Read a promotion with id: %s', promotion_id)
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+#     This endpoint will return a Promotion based on it's id
+#     """
+#     app.logger.info('Read a promotion with id: %s', promotion_id)
+#     promotion = Promotion.find(promotion_id)
+#     if not promotion:
+#         raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+#     return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # UPDATE PROMOTION
