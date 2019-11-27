@@ -43,6 +43,7 @@ def index():
     """ Root URL response. Send back the promotion index page.  """
     return app.send_static_file('index.html')
 
+
 ######################################################################
 # Configure Swagger before initializing it
 ######################################################################
@@ -53,20 +54,21 @@ api = Api(app,
           default='promotions',
           default_label='Promotion operations',
           doc='/apidocs/',
-         )
+          )
 
 # query string arguments
 promotion_args = reqparse.RequestParser()
-promotion_args.add_argument('promotion-code', type=str, required=False, help='List Promotions by code', location='args')
+promotion_args.add_argument('promotion-code', type=str, required=False,
+                            help='List Promotions by code', location='args')
 #####################################################################
 # PATH: /promotions
 #####################################################################
 @api.route('/promotions', strict_slashes=False)
 class PromotionCollection(Resource):
     """ Handles all interactions with collections of Promotion """
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # LIST ALL PROMOTIONS
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     @api.expect(promotion_args, validate=True)
     def get(self):
         """
@@ -91,10 +93,10 @@ class PromotionCollection(Resource):
             promotions = Promotion.all()
 
         return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
-    
-    #------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     def post(self):
         """
         Add a promotion
@@ -109,29 +111,31 @@ class PromotionCollection(Resource):
         message = promotion.serialize()
         # TODO: Change to api.url_for('read_a_promotion', ...) PromotionResource after class PromotionResource is implemented.
         location_url = api.url_for(PromotionResource, promotion_id=promotion.id, _external=True)
+
         return make_response(jsonify(message), status.HTTP_201_CREATED,
-                            {
-                                'Location': location_url
-                            })
+                             {
+            'Location': location_url
+        })
+
 
 ######################################################################
-#  PATH: /promotions/{id}
+#  PATH: /promotions/{promotion_id}
 ######################################################################
 @api.route('/promotions/<promotion_id>')
 @api.param('promotion_id', 'The Promotion identifier')
 class PromotionResource(Resource):
     """
-    PetResource class
+    PromotionResource class
 
     Allows the manipulation of a single Promotion
-    GET /promotion{id} - Returns a Promotion with the id
-    PUT /promotion{id} - Update a Promotion with the id
-    DELETE /promotion{id} -  Deletes a Promotion with the id
+    GET /promotion{promotion_id} - Returns a Promotion with the promotion_id
+    PUT /promotion{promotion_id} - Update a Promotion with the promotion_id
+    DELETE /promotion{promotion_id} -  Deletes a Promotion with the promotion_id
     """
-
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # RETRIEVE A PROMOTION
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    @api.doc('read_a_promotion')
     @api.response(404, 'Promotion not found')
     def get(self, promotion_id):
         """
@@ -145,6 +149,64 @@ class PromotionResource(Resource):
             api.abort(status.HTTP_404_NOT_FOUND, 
                       "Promotion with id '{}' was not found.".format(promotion_id))
         return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+    # ------------------------------------------------------------------
+    # DELETE A PROMOTION
+    # ------------------------------------------------------------------
+    @api.doc('delete_promotions', security='apikey')
+    @api.response(204, 'Promotion deleted')
+    def delete(self, promotion_id):
+        """
+        Delete a Promotion
+
+        This endpoint will delete a Promotion based the id specified in the path
+        """
+        app.logger.info(
+            'Request to Delete a promotion with id [%s]', promotion_id)
+        promotion = Promotion.find(promotion_id)
+        if promotion:
+            promotion.delete()
+        return '', status.HTTP_204_NO_CONTENT
+
+######################################################################
+# UPDATE PROMOTION
+######################################################################
+@app.route('/promotions/<promotion_id>', methods=['PUT'])
+def update_promotions(promotion_id):
+    """
+    Function to update a promotion
+    """
+    app.logger.info(
+        'Request to update promotion with promotion id {}'.format(promotion_id))
+    check_content_type('application/json')
+    promotion = Promotion.find(promotion_id)
+    if not promotion:
+        raise NotFound(
+            "Promotion with id '{}' was not found.".format(promotion_id))
+    promotion.deserialize(request.get_json())
+    promotion.id = promotion_id
+    promotion.save()
+    app.logger.info(
+        'Promotion with id {} successfully updated'.format(promotion_id))
+    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# LIST ALL APIS
+######################################################################
+@app.route('/apis', methods=['GET'])
+def list_all_apis():
+    """ Returns all of the APIs  """
+    app.logger.info('Request for api list')
+    func_list = []
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            methods = ','.join(rule.methods)
+            func_list.append(
+                (rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
+    return make_response(jsonify(name='Promotion REST API Service',
+                                 version='1.0',
+                                 functions=func_list), status.HTTP_200_OK)
+
 
 ######################################################################
 # Apply a promotion on products
@@ -164,7 +226,8 @@ def apply_a_promotion(promotion_id):
     # Get promotion data
     promotion = Promotion.find(promotion_id)
     if not promotion:
-        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
+        raise NotFound(
+            "Promotion with id '{}' was not found.".format(promotion_id))
 
     # Get product data
     try:
@@ -186,7 +249,8 @@ def apply_a_promotion(promotion_id):
         try:
             new_price = float(product['price'])
         except ValueError:
-            raise DataValidationError('The given product prices cannot convert to a float number')
+            raise DataValidationError(
+                'The given product prices cannot convert to a float number')
         if product_id in eligible_ids:
             new_price = new_price * (promotion.percentage / 100.0)
         else:
@@ -200,56 +264,6 @@ def apply_a_promotion(promotion_id):
 
     return make_response(jsonify({"products": products_with_new_prices}), status.HTTP_200_OK)
 
-######################################################################
-# DELETE PROMOTIONS
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['DELETE'])
-def delete_promotions(promotion_id):
-    """
-    Delete a promotion
-
-    This endpoint will delete a Promotion based on the id specified in the path
-    """
-    app.logger.info('Request to delete promotion with id: %s', promotion_id)
-    promotion = Promotion.find(promotion_id)
-    if promotion:
-        promotion.delete()
-    return make_response('', status.HTTP_204_NO_CONTENT)
-
-######################################################################
-# UPDATE PROMOTION
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['PUT'])
-def update_promotions(promotion_id):
-    """
-    Function to update a promotion
-    """
-    app.logger.info('Request to update promotion with promotion id {}'.format(promotion_id))
-    check_content_type('application/json')
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound("Promotion with id '{}' was not found.".format(promotion_id))
-    promotion.deserialize(request.get_json())
-    promotion.id = promotion_id
-    promotion.save()
-    app.logger.info('Promotion with id {} successfully updated'.format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
-
-######################################################################
-# LIST ALL APIS
-######################################################################
-@app.route('/apis', methods=['GET'])
-def list_all_apis():
-    """ Returns all of the APIs  """
-    app.logger.info('Request for api list')
-    func_list = []
-    for rule in app.url_map.iter_rules():
-        if rule.endpoint != 'static':
-            methods = ','.join(rule.methods)
-            func_list.append((rule.rule, methods, app.view_functions[rule.endpoint].__doc__))
-    return make_response(jsonify(name='Promotion REST API Service',
-                                 version='1.0',
-                                 functions=func_list), status.HTTP_200_OK)
 
 ######################################################################
 # Error Handlers
@@ -258,6 +272,7 @@ def list_all_apis():
 def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
+
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):
@@ -277,6 +292,7 @@ def method_not_supported(error):
                    error='Method not Allowed',
                    message=message), status.HTTP_405_METHOD_NOT_ALLOWED
 
+
 @app.errorhandler(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 def mediatype_not_supported(error):
     """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
@@ -286,15 +302,20 @@ def mediatype_not_supported(error):
                    error='Unsupported media type',
                    message=message), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
+
 def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers['Content-Type'] == content_type:
         return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+    app.logger.error('Invalid Content-Type: %s',
+                     request.headers['Content-Type'])
     abort(415, 'Content-Type must be {}'.format(content_type))
+
 
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
