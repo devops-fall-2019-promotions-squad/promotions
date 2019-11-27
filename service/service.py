@@ -132,6 +132,7 @@ class PromotionResource(Resource):
     #------------------------------------------------------------------
     # RETRIEVE A PROMOTION
     #------------------------------------------------------------------
+    @api.response(404, 'Promotion not found')
     def get(self, promotion_id):
         """
         Retrieve a single Promotion
