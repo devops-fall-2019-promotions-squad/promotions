@@ -23,10 +23,8 @@ All service functions should be defined here
 
 import logging
 import sys
-import time
 
 from flask import abort, jsonify, make_response, request, url_for
-from werkzeug.exceptions import NotFound
 
 from flask_api import status  # HTTP Status Codes
 from flask_restplus import Api, Resource, fields, reqparse, inputs
@@ -278,8 +276,6 @@ def list_all_apis():
 ######################################################################
 @api.errorhandler(DataValidationError)
 def request_validation_error(error):
-    """ Handles Value Errors from bad data """
-    # return bad_request(error)
     """ Handles Value Errors from bad data """
     message = str(error)
     app.logger.error(message)
