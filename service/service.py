@@ -97,7 +97,6 @@ class PromotionCollection(Resource):
     # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
     # ------------------------------------------------------------------
-    @api.response(500, 'Unexpected error')
     def post(self):
         """
         Add a promotion
