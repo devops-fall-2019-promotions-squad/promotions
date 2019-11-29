@@ -167,8 +167,7 @@ class PromotionResource(Resource):
         check_content_type('application/json')
         promotion = Promotion.find(promotion_id)
         if not promotion:
-            raise NotFound(
-                "Promotion with id '{}' was not found.".format(promotion_id))
+            api.abort(status.HTTP_404_NOT_FOUND, "Promotion with id '{}' was not found.".format(promotion_id))
         promotion.deserialize(request.get_json())
         promotion.id = promotion_id
         promotion.save()
