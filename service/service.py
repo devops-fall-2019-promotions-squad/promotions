@@ -97,6 +97,7 @@ class PromotionCollection(Resource):
     # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
     # ------------------------------------------------------------------
+    @api.response(500, 'Unexpected error')
     def post(self):
         """
         Add a promotion
@@ -148,9 +149,32 @@ class PromotionResource(Resource):
             api.abort(status.HTTP_404_NOT_FOUND, 
                       "404 Not Found: Promotion with id '{}' was not found.".format(promotion_id)
                       )
-        # TODO: change to "Promotion with id '{}' was not found.".format(promotion_id))
-        # after change the BDD file.
 
+        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+    
+    #------------------------------------------------------------------
+    # UPDATE AN EXISTING PROMOTION
+    #------------------------------------------------------------------
+    @api.response(404, 'Promotion not found')
+    @api.response(400, 'The posted Promotion data was not valid')
+    def put(self, promotion_id):
+        """
+        Update a Promotion
+
+        This endpoint will update a Promotion based the body that is posted
+        """
+        app.logger.info(
+            'Request to update promotion with promotion id {}'.format(promotion_id))
+        check_content_type('application/json')
+        promotion = Promotion.find(promotion_id)
+        if not promotion:
+            raise NotFound(
+                "Promotion with id '{}' was not found.".format(promotion_id))
+        promotion.deserialize(request.get_json())
+        promotion.id = promotion_id
+        promotion.save()
+        app.logger.info(
+            'Promotion with id {} successfully updated'.format(promotion_id))
         return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
     # ------------------------------------------------------------------
@@ -170,28 +194,6 @@ class PromotionResource(Resource):
         if promotion:
             promotion.delete()
         return '', status.HTTP_204_NO_CONTENT
-
-######################################################################
-# UPDATE PROMOTION
-######################################################################
-@app.route('/promotions/<promotion_id>', methods=['PUT'])
-def update_promotions(promotion_id):
-    """
-    Function to update a promotion
-    """
-    app.logger.info(
-        'Request to update promotion with promotion id {}'.format(promotion_id))
-    check_content_type('application/json')
-    promotion = Promotion.find(promotion_id)
-    if not promotion:
-        raise NotFound(
-            "Promotion with id '{}' was not found.".format(promotion_id))
-    promotion.deserialize(request.get_json())
-    promotion.id = promotion_id
-    promotion.save()
-    app.logger.info(
-        'Promotion with id {} successfully updated'.format(promotion_id))
-    return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # LIST ALL APIS

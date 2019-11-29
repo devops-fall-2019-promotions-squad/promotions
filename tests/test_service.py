@@ -191,7 +191,6 @@ class TestPromotionServer(unittest.TestCase):
         request_data = {'products': []}
         for product_id, price in zip(product_ids, prices):
             request_data['products'].append({'product_id': product_id, 'price': price})
-        print(request_data)
 
         # Apply promotion with nonexist promotion
         resp = self.app.post('/promotions/{}/apply'.format(nonexist_promotion_id),
