@@ -28,7 +28,7 @@ import json
 import logging
 from cloudant.client import Cloudant
 from cloudant.query import Query
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 from cloudant.adapters import Replay429Adapter
 
 # get configruation from enviuronment (12-factor)
@@ -36,6 +36,10 @@ ADMIN_PARTY = os.environ.get('ADMIN_PARTY', 'False').lower() == 'true'
 CLOUDANT_HOST = os.environ.get('CLOUDANT_HOST', 'localhost')
 CLOUDANT_USERNAME = os.environ.get('CLOUDANT_USERNAME', 'admin')
 CLOUDANT_PASSWORD = os.environ.get('CLOUDANT_PASSWORD', 'pass')
+
+
+class DatabaseConnectionError(Exception):
+    """ Custom Exception when database connection fails """
 
 
 class DataValidationError(Exception):
@@ -51,10 +55,10 @@ class Promotion():
     """
     logger = logging.getLogger('flask.app')
     client = None   # cloudant.client.Cloudant
-    database = None # cloudant.database.CloudantDatabase
+    database = None  # cloudant.database.CloudantDatabase
 
-    def __init__(self, code=None, products=None, \
-        percentage=None, expiry_date=None, start_date=None):
+    def __init__(self, code=None, products=None,
+                 percentage=None, expiry_date=None, start_date=None):
         """ Constructor """
         self.id = None
         self.code = code
@@ -261,7 +265,8 @@ class Promotion():
             creds = json.loads(os.environ['BINDING_CLOUDANT'])
             vcap_services = {"cloudantNoSQLDB": [{"credentials": creds}]}
         else:
-            Promotion.logger.info('VCAP_SERVICES and BINDING_CLOUDANT undefined.')
+            Promotion.logger.info(
+                'VCAP_SERVICES and BINDING_CLOUDANT undefined.')
             creds = {
                 "username": CLOUDANT_USERNAME,
                 "password": CLOUDANT_PASSWORD,
@@ -282,9 +287,8 @@ class Promotion():
                 opts['url'] = cloudant_service['credentials']['url']
 
         if any(k not in opts for k in ('host', 'username', 'password', 'port', 'url')):
-            Promotion.logger.info('Error - Failed to retrieve options. ' \
-                             'Check that app is bound to a Cloudant service.')
-            sys.exit(-1)
+            raise DatabaseConnectionError('Error - Failed to retrieve options. '
+                                          'Check that app is bound to a Cloudant service.')
 
         Promotion.logger.info('Cloudant Endpoint: %s', opts['url'])
         try:
@@ -296,10 +300,12 @@ class Promotion():
                                         connect=True,
                                         auto_renew=True,
                                         admin_party=ADMIN_PARTY,
-                                        adapter=Replay429Adapter(retries=10, initialBackoff=0.1)
+                                        adapter=Replay429Adapter(
+                                            retries=10, initialBackoff=0.1)
                                         )
         except ConnectionError:
-            raise AssertionError('Cloudant service could not be reached')
+            raise DatabaseConnectionError(
+                'Cloudant service could not be reached')
 
         # Create database if it doesn't exist
         try:
@@ -309,4 +315,5 @@ class Promotion():
             Promotion.database = Promotion.client.create_database(dbname)
         # check for success
         if not Promotion.database.exists():
-            raise AssertionError('Database [{}] could not be obtained'.format(dbname))
+            raise DatabaseConnectionError(
+                'Database [{}] could not be obtained'.format(dbname))
