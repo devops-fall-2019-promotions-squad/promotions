@@ -40,7 +40,7 @@ class PromotionFactory(factory.Factory):
             promos[0].save()
             for promotion in promos[1:]:
                 delta = promotion.expiry_date-promotion.start_date
-                promotion.start_date = pre_expiry_date+1
+                promotion.start_date = pre_expiry_date+random.randint(100, 2000)
                 promotion.expiry_date = promotion.start_date+delta
                 pre_expiry_date = promotion.expiry_date
                 promotion.save()

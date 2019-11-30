@@ -115,9 +115,7 @@ class TestPromotionServer(unittest.TestCase):
 
         # start date > expiry date
         promotion = PromotionFactory()
-        ts = promotion.start_date
-        promotion.start_date = promotion.expiry_date
-        promotion.expiry_date = ts
+        promotion.start_date, promotion.expiry_date = promotion.expiry_date, promotion.start_date
         resp = self.app.post('/promotions', data=json.dumps(dict(
             code=promotion.code,
             percentage=promotion.percentage,
