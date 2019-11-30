@@ -222,6 +222,10 @@ class ApplyResource(Resource):
             api.abort(status.HTTP_404_NOT_FOUND,
                       'Promotion with id "{}" was not found.'.format(promotion_id))
 
+        # Check promotion availability
+        if not promotion.is_active():
+            api.abort(status.HTTP_409_CONFLICT, 'Promotion with id "{}" is not active.'.format(promotion_id))
+
         # Get product data
         try:
             products = data['products']

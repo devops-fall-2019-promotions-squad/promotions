@@ -23,6 +23,7 @@ All models should be defined here
 
 import os
 import sys
+import time
 import json
 import logging
 from cloudant.client import Cloudant
@@ -83,6 +84,8 @@ class Promotion():
 
     def update(self):
         """ Updates a Promotion in the database """
+        self.validate()
+
         if self.id:
             try:
                 document = self.database[self.id]
@@ -94,8 +97,6 @@ class Promotion():
 
     def save(self):
         """ Saves a Promotion in the database """
-        self.validate()
-
         if self.id:
             self.update()
         else:
@@ -123,9 +124,23 @@ class Promotion():
             raise DataValidationError('expiry_date attribute is not set')
         if self.start_date is None:
             raise DataValidationError('start_date attribute is not set')
+        if self.start_date > self.expiry_date:
+            raise DataValidationError('start date should not be larger than expiry date')
         if self.percentage < 0 or self.percentage > 100:
             raise DataValidationError(
                 'Percentage should be in the range of 0 to 100')
+
+        # Check if this promotion conflicts with any existing promotions
+        promotions = Promotion.find_by_code(self.code)
+        for promotion in promotions:
+            print(f'in val {self.id}')
+            print(f'in val {promotion.id}')
+            if self.id is not None and self.id == promotion.id:
+                continue
+
+            if (promotion.start_date <= self.start_date and self.start_date <= promotion.expiry_date) or \
+                (promotion.start_date <= self.expiry_date and self.expiry_date <= promotion.expiry_date):
+                raise DataValidationError(f'This new/updated promotion conflicts with promotion({promotion.id})')
 
     def serialize(self):
         """ Serializes a Promotion into a dictionary """
@@ -163,6 +178,13 @@ class Promotion():
             self.id = data['_id']
 
         return self
+    
+    def is_active(self):
+        """
+        A promotion is active if the current timestamp is in its range [start_date, expiry_date]
+        """
+        now_ts = time.time()
+        return self.start_date <= now_ts and now_ts <= self.expiry_date
 
 ######################################################################
 #  S T A T I C   D A T A B S E   M E T H O D S
