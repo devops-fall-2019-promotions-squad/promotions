@@ -7,7 +7,7 @@ import random
 from collections import defaultdict
 
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDate
+from factory.fuzzy import FuzzyChoice
 from service.models import Promotion
 
 
