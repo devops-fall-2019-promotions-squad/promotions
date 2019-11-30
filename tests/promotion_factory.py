@@ -2,10 +2,12 @@
 """
 Test Factory to make fake objects for testing
 """
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
+from collections import defaultdict
 
 import factory
-from factory.fuzzy import FuzzyChoice
+from factory.fuzzy import FuzzyChoice, FuzzyDate
 from service.models import Promotion
 
 
@@ -16,21 +18,31 @@ class PromotionFactory(factory.Factory):
         model = Promotion
     code = FuzzyChoice(choices=['SAVE15', 'SAVE20', 'SAVE30'])
     percentage = FuzzyChoice(choices=[10, 40, 30, 25, 5, 0, 15])
-    expiry_date = FuzzyChoice(choices=[int(datetime.strptime(
-        date, "%Y-%m-%d").timestamp()) \
-            for date in ['2019-11-11', '2018-01-04', '2019-10-01', '2020-05-03']])
-    start_date = FuzzyChoice(choices=[int(datetime.strptime(
-        date, "%Y-%m-%d").timestamp()) \
-            for date in ['2019-10-09', '2018-11-02', '2019-03-20', '2020-05-13']])
+    start_date = int((datetime.now()-timedelta(weeks=random.randint(1, 5))).timestamp())
+    expiry_date = int((datetime.now()+timedelta(weeks=random.randint(1, 5))).timestamp())
     products = FuzzyChoice(
-        choices=[['MacBook', 'Airpods'], ['iPhone', 'iPad']])
+        choices=[['5612234', '8516634'], ['847153', '645382']])
 
     @classmethod
-    def batch_create(cls, count):
-        """ Factory method to create promotions in bulk """
-        fakers = []
-        for _ in range(count):
-            faker = PromotionFactory()
-            faker.save()
-            fakers.append(faker)
-        return fakers
+    def batch_create(cls, count, **kwargs):
+        """
+        Factory method to create promotions in bulk.
+        Ensure that promotions with the same code will not overlap with each others
+        """
+        promotions = cls.create_batch(count, **kwargs)
+        promotions_dict = defaultdict(list)
+        for promotion in promotions:
+            promotions_dict[promotion.code].append(promotion)
+
+        promotions = []
+        for promos in promotions_dict.values():
+            pre_expiry_date = promos[0].expiry_date
+            promos[0].save()
+            for promotion in promos[1:]:
+                delta = promotion.expiry_date-promotion.start_date
+                promotion.start_date = pre_expiry_date+1
+                promotion.expiry_date = promotion.start_date+delta
+                pre_expiry_date = promotion.expiry_date
+                promotion.save()
+            promotions.extend(promos)
+        return promotions
