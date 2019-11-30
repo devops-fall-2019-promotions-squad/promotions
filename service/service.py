@@ -28,7 +28,7 @@ from flask import abort, jsonify, make_response, request, url_for
 
 from flask_api import status  # HTTP Status Codes
 from flask_restplus import Api, Resource, fields, reqparse, inputs
-from service.models import DataValidationError, Promotion
+from service.models import DataValidationError, DatabaseConnectionError, Promotion
 
 # Import Flask application
 from . import app
@@ -46,9 +46,9 @@ def index():
 ######################################################################
 # Configure Swagger before initializing it
 ######################################################################
-api = Api(app,
-          version='1.0.0',
-          title='Promotion Demo REST API Service',
+api = Api(app, 
+          version='1.0.0', 
+          title='Promotion Demo REST API Service', 
           description='This is a sample Promotion server.',
           default='promotions',
           default_label='Promotion operations',
@@ -108,7 +108,8 @@ class PromotionCollection(Resource):
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
-        location_url = api.url_for(PromotionResource, promotion_id=promotion.id, _external=True)
+        location_url = api.url_for(
+            PromotionResource, promotion_id=promotion.id, _external=True)
 
         return make_response(jsonify(message), status.HTTP_201_CREATED,
                              {
@@ -141,18 +142,20 @@ class PromotionResource(Resource):
 
         This endpoint will return a Promotion based on it's id
         """
-        app.logger.info("Request to Retrieve a promotion with id [%s]", promotion_id)
+        app.logger.info(
+            "Request to Retrieve a promotion with id [%s]", promotion_id)
         promotion = Promotion.find(promotion_id)
         if not promotion:
-            api.abort(status.HTTP_404_NOT_FOUND, 
-                      "404 Not Found: Promotion with id '{}' was not found.".format(promotion_id)
+            api.abort(status.HTTP_404_NOT_FOUND,
+                      "404 Not Found: Promotion with id '{}' was not found.".format(
+                          promotion_id)
                       )
 
         return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
-    
-    #------------------------------------------------------------------
+
+    # ------------------------------------------------------------------
     # UPDATE AN EXISTING PROMOTION
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     @api.response(404, 'Promotion not found')
     @api.response(400, 'The posted Promotion data was not valid')
     def put(self, promotion_id):
@@ -166,7 +169,8 @@ class PromotionResource(Resource):
         check_content_type('application/json')
         promotion = Promotion.find(promotion_id)
         if not promotion:
-            api.abort(status.HTTP_404_NOT_FOUND, "Promotion with id '{}' was not found.".format(promotion_id))
+            api.abort(status.HTTP_404_NOT_FOUND,
+                      "Promotion with id '{}' was not found.".format(promotion_id))
         promotion.deserialize(request.get_json())
         promotion.id = promotion_id
         promotion.save()
@@ -215,7 +219,8 @@ class ApplyResource(Resource):
         # Get promotion data
         promotion = Promotion.find(promotion_id)
         if not promotion:
-            api.abort(status.HTTP_404_NOT_FOUND, 'Promotion with id "{}" was not found.'.format(promotion_id))
+            api.abort(status.HTTP_404_NOT_FOUND,
+                      'Promotion with id "{}" was not found.'.format(promotion_id))
 
         # Get product data
         try:
@@ -284,6 +289,18 @@ def request_validation_error(error):
         'error': 'Bad Request',
         'message': message
     }, status.HTTP_400_BAD_REQUEST
+
+
+@api.errorhandler(DatabaseConnectionError)
+def database_connection_error(error):
+    """ Handles Database Errors from connection attempts """
+    message = str(error)
+    app.logger.critical(message)
+    return {
+        'status_code': status.HTTP_503_SERVICE_UNAVAILABLE,
+        'error': 'Service Unavailable',
+        'message': message
+    }, status.HTTP_503_SERVICE_UNAVAILABLE
 
 
 ######################################################################
