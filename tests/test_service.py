@@ -6,6 +6,7 @@ Test cases can be run with the following:
   codecov --token=$CODECOV_TOKEN
 """
 
+import time
 import unittest
 import json
 import logging
@@ -38,8 +39,7 @@ class TestPromotionServer(unittest.TestCase):
     def test_list_all_promotions(self):
         """ Get a list of all Promotions in DB """
         count = 5
-        for _ in range(count):
-            PromotionFactory().save()
+        PromotionFactory.batch_create(count)
         resp = self.app.get('/promotions')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
@@ -47,14 +47,11 @@ class TestPromotionServer(unittest.TestCase):
 
     def test_get_promotions_by_code(self):
         """ Get a list of all Promotions having a given code """
-        PromotionFactory.batch_create(10)
+        PromotionFactory.batch_create(10, code='SAVE15')
         count = 5
         code = 'SAVE_NOTHING'
-        for _ in range(count):
-            promotion = PromotionFactory()
-            promotion.code = code
-            promotion.save()
-        PromotionFactory.batch_create(12)
+        PromotionFactory.batch_create(count, code=code)
+        PromotionFactory.batch_create(12, code='SAVE20')
         resp = self.app.get('/promotions?promotion-code={}'.format(code))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
@@ -112,6 +109,45 @@ class TestPromotionServer(unittest.TestCase):
         self.assertEqual(new_prom['start_date'],
                          promotion.start_date, "Start date does not match")
         self.assertTrue(set(promotion.products) == set(new_prom['products']))
+    
+    def test_create_a_promotion_with_bad_data(self):
+        """ Create a promotion with bad data"""
+
+        # start date > expiry date
+        promotion = PromotionFactory()
+        promotion.start_date, promotion.expiry_date = promotion.expiry_date, promotion.start_date
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion.code,
+            percentage=promotion.percentage,
+            expiry_date=promotion.expiry_date,
+            start_date=promotion.start_date,
+            products=promotion.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # conflict with others
+        promotion1 = PromotionFactory()
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion1.code,
+            percentage=promotion1.percentage,
+            expiry_date=promotion1.expiry_date,
+            start_date=promotion1.start_date,
+            products=promotion1.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        promotion2 = PromotionFactory()
+        promotion2.code = promotion1.code
+        promotion2.start_date = (promotion1.start_date+promotion1.expiry_date)//2
+        promotion2.expiry_date = promotion2.start_date+1000
+        resp = self.app.post('/promotions', data=json.dumps(dict(
+            code=promotion2.code,
+            percentage=promotion2.percentage,
+            expiry_date=promotion2.expiry_date,
+            start_date=promotion2.start_date,
+            products=promotion2.products
+        )), content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_apply_a_promotion_on_products(self):
         """ Apply a promotion on a set of products together with their prices """
@@ -147,6 +183,28 @@ class TestPromotionServer(unittest.TestCase):
         resp_data = resp.get_json()
         for product in resp_data['products']:
             self.assertEqual(product['price'], ground_truth[product['product_id']])
+    
+    def test_apply_a_inactive_promotion_on_products(self):
+        """ Apply a inactive promotion on a set of products together with their prices """
+        # Set up fake data
+        product_ids = ['ae12GH1vfg2KC51a', 'c2GH374g2C51dacg', 'c3573HEYv02351dh']
+        prices = [200, 352.12, 101.99]
+        products = product_ids[:-1]
+        test_promotion = PromotionFactory()
+        test_promotion.products = products
+        test_promotion.start_date = time.time()+1000
+        test_promotion.expiry_date = test_promotion.start_date+1000
+        test_promotion.save()
+
+        # Create request json data
+        request_data = {'products': []}
+        for product_id, price in zip(product_ids, prices):
+            request_data['products'].append({'product_id': product_id, 'price': price})
+        
+        resp = self.app.post('/promotions/{}/apply'.format(test_promotion.id),
+                             json=request_data,
+                             content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
 
     def test_update_a_promotion(self):
         """ Update a promotion, given a promotion id """
@@ -160,6 +218,8 @@ class TestPromotionServer(unittest.TestCase):
         #update a promotion
         new_promotion = resp.get_json()
         new_promotion['code'] = 'SAVENEW'
+        new_promotion['start_date'] = test_promotion.start_date+100
+        new_promotion['expiry_date'] = test_promotion.expiry_date+100
         resp = self.app.put('/promotions/{}'.format(new_promotion['id']),
                             json=new_promotion,
                             content_type='application/json')
