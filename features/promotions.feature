@@ -96,6 +96,9 @@ Scenario: Apply Get Discounted Prices Action on A Set of Products
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
     And I should see "12/01/2019" in the "Expiry Date" field
+    When I change the active period of this promotion to be today
+    And I press the "Update" button
+    Then I should see the message "Success"
     When I copy the "ID" field
     And I press the "Action Tab" button
     And I paste the "Action ID" field

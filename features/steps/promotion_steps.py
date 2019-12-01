@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 WAIT_SECONDS = int(getenv('WAIT_SECONDS', '60'))
 
@@ -138,6 +138,24 @@ def step_impl(context, element_name, text_string):
     )
     element.clear()
     element.send_keys(text_string)
+
+@when('I change the active period of this promotion to be today')
+def step_impl(context):
+    today_str = date.today().strftime("%m/%d/%Y")
+    element_id = 'promotion_start_date'
+    element = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.presence_of_element_located((By.ID, element_id))
+    )
+    element.clear()
+    element.send_keys(today_str)
+
+    tmr_str = (date.today()+timedelta(days=1)).strftime("%m/%d/%Y")
+    element_id = 'promotion_expiry_date'
+    element = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.presence_of_element_located((By.ID, element_id))
+    )
+    element.clear()
+    element.send_keys(tmr_str)
 
 @then('I should see "{name}" in the results')
 def step_impl(context, name):
