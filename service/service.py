@@ -18,7 +18,16 @@
 #    ===========`-.`___`-.__\ \___  /__.-'_.'_.-'================
 #                            `=--=-'                    BUG FREE
 """
-All service functions should be defined here
+Promotion Service with Swagger
+
+Paths:
+------
+GET / - Displays a UI for Selenium testing
+GET /promotions - Returns a list all of the Promotions
+GET /promotions/{promotion_id} - Returns the Promotion with a given id number
+POST /promotions - creates a new Promotion record in the database
+PUT /promotions/{promotion_id} - updates a Promotion record in the database
+DELETE /promotions/{promotion_id} - deletes a Promotion record in the database
 """
 
 import logging
@@ -32,6 +41,7 @@ from service.models import DataValidationError, DatabaseConnectionError, Promoti
 
 # Import Flask application
 from . import app
+
 
 ######################################################################
 # VISIT INDEX PAGE
@@ -54,6 +64,34 @@ api = Api(app,
           default_label='Promotion operations',
           doc='/apidocs/',
           )
+
+promotion_model = api.model('Promotion', {
+    'id': fields.String(readOnly=True,
+                         description='The unique id assigned internally by service'),
+    'code': fields.String(required=True,
+                          description='The code of the Promotion'),
+    'percentage': fields.Integer(required=True,
+                                description='The percentage of the Promotion, 0 < percentage < 100'),
+    'products': fields.List(fields.String, required=True,
+                                  description='Product IDs for the Promotion.'),
+    'start_date': fields.Integer(required=True,
+                                description='Start date timestamp for the Promotion.'),
+    'expiry_date': fields.Integer(required=True,
+                                 description='Expiry date timestamp for the Promotion.')
+})
+
+create_model = api.model('Promotion', {
+    'code': fields.String(required=True,
+                          description='The code of the Promotion'),
+    'percentage': fields.Integer(required=True,
+                                description='The percentage of the Promotion, 0 < percentage < 100'),
+    'products': fields.List(fields.String, required=True,
+                                 description='Product IDs for the Promotion.'),
+    'start_date': fields.Integer(required=True,
+                                description='Start date timestamp for the Promotion.'),
+    'expiry_date': fields.Integer(required=True,
+                                 description='Expiry date timestamp for the Promotion.')
+})
 
 # query string arguments
 promotion_args = reqparse.RequestParser()
@@ -105,16 +143,14 @@ class PromotionCollection(Resource):
         app.logger.info('Request to create a Promotion')
         check_content_type('application/json')
         promotion = Promotion()
+        app.logger.debug('Payload = %s', api.payload)
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
         location_url = api.url_for(
             PromotionResource, promotion_id=promotion.id, _external=True)
 
-        return make_response(jsonify(message), status.HTTP_201_CREATED,
-                             {
-            'Location': location_url
-        })
+        return message, status.HTTP_201_CREATED, {'Location': location_url}
 
 
 ######################################################################
@@ -136,6 +172,7 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     @api.doc('read_a_promotion')
     @api.response(404, 'Promotion not found')
+    @api.marshal_with(promotion_model)
     def get(self, promotion_id):
         """
         Retrieve a single Promotion
@@ -151,7 +188,7 @@ class PromotionResource(Resource):
                           promotion_id)
                       )
 
-        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+        return promotion.serialize(), status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING PROMOTION
