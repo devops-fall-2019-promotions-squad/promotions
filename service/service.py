@@ -33,7 +33,6 @@ DELETE /promotions/{promotion_id} - deletes a Promotion record in the database
 import logging
 import sys
 
-from datetime import datetime
 from flask import abort, jsonify, make_response, request, url_for
 
 from flask_api import status  # HTTP Status Codes
@@ -43,14 +42,6 @@ from service.models import DataValidationError, DatabaseConnectionError, Promoti
 # Import Flask application
 from . import app
 
-# # define date format
-class DateFormat(fields.Raw):
-    def format(self, value):
-        return int(datetime.strptime(value, "%m/%d/%Y").timestamp())
-
-class ListFormat(fields.Raw):
-    def format(self, value):
-        return value.split(',')
 
 ######################################################################
 # VISIT INDEX PAGE
@@ -75,18 +66,18 @@ api = Api(app,
           )
 
 promotion_model = api.model('Promotion', {
-    '_id': fields.String(readOnly=True,
+    'id': fields.String(readOnly=True,
                          description='The unique id assigned internally by service'),
     'code': fields.String(required=True,
                           description='The code of the Promotion'),
     'percentage': fields.Integer(required=True,
                                 description='The percentage of the Promotion, 0 < percentage < 100'),
-    'product IDs': ListFormat(required=True,
-                                 description='Product IDs for the Promotion.'),
-    'start date': DateFormat(required=True,
-                                description='Start date for the Promotion in format MM/DD/YYYY.'),
-    'expiry date': DateFormat(required=True,
-                                 description='Expiry date for the Promotion in format MM/DD/YYYY.')
+    'products': fields.List(fields.String, required=True,
+                                  description='Product IDs for the Promotion.'),
+    'start_date': fields.Integer(required=True,
+                                description='Start date timestamp for the Promotion.'),
+    'expiry_date': fields.Integer(required=True,
+                                 description='Expiry date timestamp for the Promotion.')
 })
 
 create_model = api.model('Promotion', {
@@ -94,12 +85,12 @@ create_model = api.model('Promotion', {
                           description='The code of the Promotion'),
     'percentage': fields.Integer(required=True,
                                 description='The percentage of the Promotion, 0 < percentage < 100'),
-    'product IDs': ListFormat(required=True,
+    'products': fields.List(fields.String, required=True,
                                  description='Product IDs for the Promotion.'),
-    'start date': DateFormat(required=True,
-                                description='Start date for the Promotion in format MM/DD/YYYY.'),
-    'expiry date': DateFormat(required=True,
-                                 description='Expiry date for the Promotion in format MM/DD/YYYY.')
+    'start_date': fields.Integer(required=True,
+                                description='Start date timestamp for the Promotion.'),
+    'expiry_date': fields.Integer(required=True,
+                                 description='Expiry date timestamp for the Promotion.')
 })
 
 # query string arguments
@@ -152,10 +143,10 @@ class PromotionCollection(Resource):
         app.logger.info('Request to create a Promotion')
         check_content_type('application/json')
         promotion = Promotion()
+        app.logger.debug('Payload = %s', api.payload)
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
-        print(message)
         location_url = api.url_for(
             PromotionResource, promotion_id=promotion.id, _external=True)
 
