@@ -6,7 +6,7 @@ Feature: The promotion service back-end
 Background:
     Given the following promotions
         | code      | percentage    | products    | start_date | expiry_date |
-        | Save 25   | 75            |10001,10002  | 10/01/2019 | 12/31/2019  |
+        | Save 25   | 75            |10001,10002  | 10/01/2019 | 12/01/2019  |
         | Save 50   | 50            |20001,20002  | 11/01/2019 | 01/01/2020  |
 
 Scenario: The server is running
@@ -71,7 +71,7 @@ Scenario: Read a Promotion
     And I should see "75" in the "Percentage" field
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
-    And I should see "12/31/2019" in the "Expiry Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
 
 Scenario: Delete a Promotion
     When I visit the "Home Page"
@@ -95,7 +95,10 @@ Scenario: Apply Get Discounted Prices Action on A Set of Products
     And I should see "75" in the "Percentage" field
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
-    And I should see "12/31/2019" in the "Expiry Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
+    When I change the active period of this promotion to be today
+    And I press the "Update" button
+    Then I should see the message "Success"
     When I copy the "ID" field
     And I press the "Action Tab" button
     And I paste the "Action ID" field
@@ -116,7 +119,7 @@ Scenario: Query a Promotion
     And I should see "75" in the "Percentage" field
     And I should see "10001,10002" in the "Product IDs" field
     And I should see "10/01/2019" in the "Start Date" field
-    And I should see "12/31/2019" in the "Expiry Date" field
+    And I should see "12/01/2019" in the "Expiry Date" field
 
 Scenario: List Promotions
     When I visit the "Home Page"
