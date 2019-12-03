@@ -100,6 +100,7 @@ class TestPromotionServer(unittest.TestCase):
         resp = self.app.get(location, content_type='application/json')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         new_prom = resp.get_json()
+        print(new_prom)
         self.assertEqual(new_prom['code'],
                          promotion.code, "Codes do not match")
         self.assertEqual(new_prom['percentage'],

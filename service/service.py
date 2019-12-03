@@ -18,12 +18,22 @@
 #    ===========`-.`___`-.__\ \___  /__.-'_.'_.-'================
 #                            `=--=-'                    BUG FREE
 """
-All service functions should be defined here
+Promotion Service with Swagger
+
+Paths:
+------
+GET / - Displays a UI for Selenium testing
+GET /promotions - Returns a list all of the Promotions
+GET /promotions/{promotion_id} - Returns the Promotion with a given id number
+POST /promotions - creates a new Promotion record in the database
+PUT /promotions/{promotion_id} - updates a Promotion record in the database
+DELETE /promotions/{promotion_id} - deletes a Promotion record in the database
 """
 
 import logging
 import sys
 
+from datetime import datetime
 from flask import abort, jsonify, make_response, request, url_for
 
 from flask_api import status  # HTTP Status Codes
@@ -32,6 +42,15 @@ from service.models import DataValidationError, DatabaseConnectionError, Promoti
 
 # Import Flask application
 from . import app
+
+# # define date format
+class DateFormat(fields.Raw):
+    def format(self, value):
+        return int(datetime.strptime(value, "%m/%d/%Y").timestamp())
+
+class ListFormat(fields.Raw):
+    def format(self, value):
+        return value.split(',')
 
 ######################################################################
 # VISIT INDEX PAGE
@@ -54,6 +73,34 @@ api = Api(app,
           default_label='Promotion operations',
           doc='/apidocs/',
           )
+
+promotion_model = api.model('Promotion', {
+    '_id': fields.String(readOnly=True,
+                         description='The unique id assigned internally by service'),
+    'code': fields.String(required=True,
+                          description='The code of the Promotion'),
+    'percentage': fields.Integer(required=True,
+                                description='The percentage of the Promotion, 0 < percentage < 100'),
+    'product IDs': ListFormat(required=True,
+                                 description='Product IDs for the Promotion.'),
+    'start date': DateFormat(required=True,
+                                description='Start date for the Promotion in format MM/DD/YYYY.'),
+    'expiry date': DateFormat(required=True,
+                                 description='Expiry date for the Promotion in format MM/DD/YYYY.')
+})
+
+create_model = api.model('Promotion', {
+    'code': fields.String(required=True,
+                          description='The code of the Promotion'),
+    'percentage': fields.Integer(required=True,
+                                description='The percentage of the Promotion, 0 < percentage < 100'),
+    'product IDs': ListFormat(required=True,
+                                 description='Product IDs for the Promotion.'),
+    'start date': DateFormat(required=True,
+                                description='Start date for the Promotion in format MM/DD/YYYY.'),
+    'expiry date': DateFormat(required=True,
+                                 description='Expiry date for the Promotion in format MM/DD/YYYY.')
+})
 
 # query string arguments
 promotion_args = reqparse.RequestParser()
@@ -108,13 +155,11 @@ class PromotionCollection(Resource):
         promotion.deserialize(api.payload)
         promotion.save()
         message = promotion.serialize()
+        print(message)
         location_url = api.url_for(
             PromotionResource, promotion_id=promotion.id, _external=True)
 
-        return make_response(jsonify(message), status.HTTP_201_CREATED,
-                             {
-            'Location': location_url
-        })
+        return message, status.HTTP_201_CREATED, {'Location': location_url}
 
 
 ######################################################################
@@ -136,6 +181,7 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     @api.doc('read_a_promotion')
     @api.response(404, 'Promotion not found')
+    @api.marshal_with(promotion_model)
     def get(self, promotion_id):
         """
         Retrieve a single Promotion
@@ -151,7 +197,7 @@ class PromotionResource(Resource):
                           promotion_id)
                       )
 
-        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+        return promotion.serialize(), status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING PROMOTION
