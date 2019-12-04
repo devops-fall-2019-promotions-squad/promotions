@@ -67,11 +67,11 @@ api = Api(app,
 
 promotion_model = api.model('Promotion', {
     'id': fields.String(readOnly=True,
-                         description='The unique id assigned internally by service'),
+                         description='The unique id assigned internally by service.'),
     'code': fields.String(required=True,
-                          description='The code of the Promotion'),
+                          description='The code of the Promotion.'),
     'percentage': fields.Integer(required=True,
-                                description='The percentage of the Promotion, 0 < percentage < 100'),
+                                description='The percentage of the Promotion, 0 < percentage < 100.'),
     'products': fields.List(fields.String, required=True,
                                   description='Product IDs for the Promotion.'),
     'start_date': fields.Integer(required=True,
@@ -82,15 +82,27 @@ promotion_model = api.model('Promotion', {
 
 create_model = api.model('Promotion', {
     'code': fields.String(required=True,
-                          description='The code of the Promotion'),
+                          description='The code of the Promotion.'),
     'percentage': fields.Integer(required=True,
-                                description='The percentage of the Promotion, 0 < percentage < 100'),
+                                description='The percentage of the Promotion, 0 < percentage < 100.'),
     'products': fields.List(fields.String, required=True,
                                  description='Product IDs for the Promotion.'),
     'start_date': fields.Integer(required=True,
                                 description='Start date timestamp for the Promotion.'),
     'expiry_date': fields.Integer(required=True,
                                  description='Expiry date timestamp for the Promotion.')
+})
+
+product_model = api.model('Product', {
+    'product_id': fields.String(required=True,
+                          description='The unique id of the Product.'),
+    'price': fields.Float(required=True,
+                          description='The price of the Product.'),
+})
+
+product_list_model = api.model('Product List', {
+    'products': fields.List(fields.Nested(product_model), required=True,
+                            description='A list of products.'),
 })
 
 # query string arguments
@@ -241,7 +253,11 @@ class PromotionResource(Resource):
 @api.param('promotion_id', 'The Promotion identifier')
 class ApplyResource(Resource):
     """ Apply actions on a Promotion """
+    @api.doc('apply_a_promotion')
     @api.response(404, 'Promotion not found')
+    @api.response(400, 'The posted action data was not valid')
+    @api.expect(product_list_model)
+    @api.marshal_with(product_list_model)
     def post(self, promotion_id):
         """
         Apply a promotion on a given set of products together with their prices
@@ -296,7 +312,7 @@ class ApplyResource(Resource):
             app.logger.info('The following products are not \
                 eligible to the given promotion: %s', non_eligible_ids)
 
-        return make_response(jsonify({"products": products_with_new_prices}), status.HTTP_200_OK)
+        return {"products": products_with_new_prices}, status.HTTP_200_OK
 
 
 ######################################################################
