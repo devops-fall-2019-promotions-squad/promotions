@@ -205,8 +205,11 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     # UPDATE AN EXISTING PROMOTION
     # ------------------------------------------------------------------
+    @api.doc('update_a_promotion')
     @api.response(404, 'Promotion not found')
     @api.response(400, 'The posted Promotion data was not valid')
+    @api.expect(promotion_model)
+    @api.marshal_with(promotion_model)
     def put(self, promotion_id):
         """
         Update a Promotion
@@ -225,7 +228,7 @@ class PromotionResource(Resource):
         promotion.save()
         app.logger.info(
             'Promotion with id {} successfully updated'.format(promotion_id))
-        return make_response(jsonify(promotion.serialize()), status.HTTP_200_OK)
+        return promotion.serialize(), status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # DELETE A PROMOTION
