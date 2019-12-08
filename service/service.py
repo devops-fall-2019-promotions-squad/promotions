@@ -128,7 +128,9 @@ class PromotionCollection(Resource):
     # ------------------------------------------------------------------
     # LIST ALL PROMOTIONS
     # ------------------------------------------------------------------
+    @api.doc('list_promotions')
     @api.expect(promotion_args, validate=True)
+    @api.marshal_list_with(promotion_model)
     def get(self):
         """
         List promotions.
@@ -250,7 +252,6 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     @api.doc('delete_promotions')
     @api.response(204, 'Promotion deleted')
-    @token_required
     def delete(self, promotion_id):
         """
         Delete a Promotion
