@@ -146,6 +146,11 @@ class PromotionCollection(Resource):
     # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
     # ------------------------------------------------------------------
+    @api.doc('create_a_promotion')
+    @api.expect(create_model)
+    @api.response(400, 'The posted data was not valid')
+    @api.response(201, 'Promotion created successfully')
+    @api.marshal_with(promotion_model, code=201)
     def post(self):
         """
         Add a promotion
