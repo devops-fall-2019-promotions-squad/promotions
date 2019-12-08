@@ -109,6 +109,16 @@ product_list_model = api.model('Product List', {
 promotion_args = reqparse.RequestParser()
 promotion_args.add_argument('promotion-code', type=str, required=False,
                             help='List Promotions by code', location='args')
+
+######################################################################
+# GET HEALTH CHECK
+######################################################################
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+
+
 #####################################################################
 # PATH: /promotions
 #####################################################################
@@ -240,6 +250,7 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     @api.doc('delete_promotions')
     @api.response(204, 'Promotion deleted')
+    @token_required
     def delete(self, promotion_id):
         """
         Delete a Promotion
