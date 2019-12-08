@@ -133,8 +133,6 @@ class Promotion():
         # Check if this promotion conflicts with any existing promotions
         promotions = Promotion.find_by_code(self.code)
         for promotion in promotions:
-            print(f'in val {self.id}')
-            print(f'in val {promotion.id}')
             if self.id is not None and self.id == promotion.id:
                 continue
 
