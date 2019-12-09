@@ -4,6 +4,11 @@ $(function () {
     //  U T I L I T Y   F U N C T I O N S
     // ****************************************
 
+    // Visit Swagger Docs
+    $('#swagger-docs-btn').click(function(){
+        document.location='/apidocs';
+    });
+
     // Tabs switching
     $( "#tabs" ).tabs();
 
