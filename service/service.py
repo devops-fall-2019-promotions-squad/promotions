@@ -109,6 +109,16 @@ product_list_model = api.model('Product List', {
 promotion_args = reqparse.RequestParser()
 promotion_args.add_argument('promotion-code', type=str, required=False,
                             help='List Promotions by code', location='args')
+
+######################################################################
+# GET HEALTH CHECK
+######################################################################
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+
+
 #####################################################################
 # PATH: /promotions
 #####################################################################
@@ -118,7 +128,9 @@ class PromotionCollection(Resource):
     # ------------------------------------------------------------------
     # LIST ALL PROMOTIONS
     # ------------------------------------------------------------------
+    @api.doc('list_promotions')
     @api.expect(promotion_args, validate=True)
+    @api.marshal_list_with(promotion_model)
     def get(self):
         """
         List promotions.
@@ -140,8 +152,8 @@ class PromotionCollection(Resource):
         else:
             app.logger.info('Request for promotion list')
             promotions = Promotion.all()
-
-        return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
+        results = [p.serialize() for p in promotions]
+        return results, status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
@@ -238,7 +250,7 @@ class PromotionResource(Resource):
     # ------------------------------------------------------------------
     # DELETE A PROMOTION
     # ------------------------------------------------------------------
-    @api.doc('delete_promotions', security='apikey')
+    @api.doc('delete_promotions')
     @api.response(204, 'Promotion deleted')
     def delete(self, promotion_id):
         """
