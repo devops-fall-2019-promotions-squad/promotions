@@ -138,7 +138,7 @@ class Promotion():
 
             if (promotion.start_date <= self.start_date and self.start_date <= promotion.expiry_date) or \
                 (promotion.start_date <= self.expiry_date and self.expiry_date <= promotion.expiry_date):
-                raise DataValidationError(f'This new/updated promotion conflicts with promotion({promotion.id})')
+                raise DataValidationError('This new/updated promotion conflicts with promotion({})'.format(promotion.id))
 
     def serialize(self):
         """ Serializes a Promotion into a dictionary """
