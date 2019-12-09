@@ -152,8 +152,8 @@ class PromotionCollection(Resource):
         else:
             app.logger.info('Request for promotion list')
             promotions = Promotion.all()
-
-        return make_response(jsonify([p.serialize() for p in promotions]), status.HTTP_200_OK)
+        results = [p.serialize() for p in promotions]
+        return results, status.HTTP_200_OK)
 
     # ------------------------------------------------------------------
     # ADD A NEW PROMOTION
