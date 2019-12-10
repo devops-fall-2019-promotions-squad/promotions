@@ -51,7 +51,7 @@ $(function () {
         let date = new Date(unix_timestamp*1000);
         let MM = (date.getUTCMonth()+1).toString().padStart(2, "0");
         let DD = date.getUTCDate().toString().padStart(2, "0");
-        let YYYY = date.getFullYear();
+        let YYYY = date.getUTCFullYear();
         return `${MM}/${DD}/${YYYY}`;
     }
 

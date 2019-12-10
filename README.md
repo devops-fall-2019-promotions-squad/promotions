@@ -1,25 +1,35 @@
 [![Build Status](https://travis-ci.org/devops-fall-2019-promotions-squad/promotions.svg?branch=master)](https://travis-ci.org/devops-fall-2019-promotions-squad/promotions)
 [![codecov](https://codecov.io/gh/devops-fall-2019-promotions-squad/promotions/branch/master/graph/badge.svg)](https://codecov.io/gh/devops-fall-2019-promotions-squad/promotions)
 
-# promotions
+# Promotions
 Our squad is taking charge of the promotions functionality for an eCommerce web site backend which is a collection RESTful services for a client. 
 
 The promotions resource is a representation of a special promotion or sale that is running
-against a product or perhaps the entire store. Some examples are "20% off",
-etc. Discount promotions usually apply for a given duration (e.g., sale for 1 week only). It's up to
-you to get creative.
+against a product or perhaps the entire store. Each promotion has a promotion code, an active period, and associated with a list of products. One example is as follows.
+```
+Code: Save 20
+Percentage: 80
+Product IDs: [10001, 10002]
+Start Date: 11/01/2019
+Expiry Date: 12/30/2019
+```
 
-#### API calls
+## Service
+- Dev: https://nyu-promotion-service-f19.mybluemix.net/
+- Prod: https://nyu-promotion-service-f19-prod.mybluemix.net/
+
+## APIs
 URL | Operation | Description
 -- | -- | --
+`GET /` | READ | Promotions Service Home page
+`GET /apidocs` | READ | Swagger Docs
 `GET /promotions` | READ | List all promotion
 `GET /promotions/{promotion-id}` | READ | Fetch information for particular promotion
 `POST /promotions` | CREATE | Create new promotion
 `PUT /promotions/{promotion-id}` | UPDATE | Update particular promotion
 `DELETE /promotions/{promotion-id}` | DELETE | Delete particular promotion
-`GET /promotions/promotion-code={promotion-code}` | READ | Fetch promotions by promotion code
-`POST /promotions/{promotion-id}/apply` | READ | Take a list of the products(each product should at least has product ID and price) and check if the promotion can apply to them.
-`GET /` | READ | Display all available API routes
+`GET /promotions/promotion-code={promotion-code}` | READ | Fetch all promotions or fetch promotions by a promotion code
+`POST /promotions/{promotion-id}/apply` | READ | Take a list of the products(each product should at least has product ID and price) and try to apply the promotion to them.
 
 
 ## Prerequisite Installation using Vagrant VM
